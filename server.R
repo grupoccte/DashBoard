@@ -54,7 +54,7 @@ shinyServer(function(input, output) {
     colnames(listaVariaveis) <- c("Indicador")
     DT::datatable(
       listaVariaveis,options = list(paging = FALSE,searching = FALSE, 
-                                      info = FALSE, scrollY = '300px')
+                                    info = FALSE, scrollY = '300px')
     )
   })
   #retorna tabela alunos gerais
@@ -86,7 +86,7 @@ shinyServer(function(input, output) {
   })
   
   
-
+  
   #retorna tabela alunos Desempenho
   output$alunosDesempenho <- renderDataTable({
     listaAlunosDese <- data.frame(baseFiltradaDese()[,c("Nome.do.Aluno","DESEMPENHO_BINARIO")])
@@ -96,10 +96,18 @@ shinyServer(function(input, output) {
     colnames(listaAlunosDese) <- c("Nome", "Desempenho")
     DT::datatable(
       listaAlunosDese,options = list(paging = FALSE,searching = FALSE, 
-                                 info = FALSE, scrollY = '300px'),class = "compact"
+                                     info = FALSE, scrollY = '300px'),class = "compact"
     )
   })
   
   #Analise de evasao
-
+  output$indicadoresEvasao <- renderDataTable({
+    listaVariaveis <- data.frame(dicionarioBaseEvasao[,c("INDICADOR","CONSTRUTOS")])
+    colnames(listaVariaveis) <- c("Indicador","Construto")
+    DT::datatable(
+      listaVariaveis,options = list(paging = FALSE,searching = FALSE, 
+                                    info = FALSE, scrollY = '300px')
+    )
+  })
+  
 })
