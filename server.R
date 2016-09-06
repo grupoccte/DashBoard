@@ -84,6 +84,8 @@ shinyServer(function(input, output) {
       selection = list(target = 'row',mode="single",selected=c(1))
     )
   })
+  
+  
 
   #retorna tabela alunos Desempenho
   output$alunosDesempenho <- renderDataTable({
