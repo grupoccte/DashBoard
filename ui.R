@@ -2,6 +2,9 @@ library(shiny)
 library(shinydashboard)
 library(DT)
 library(dplyr)
+require(devtools)
+require(rCharts)
+
 dashboardPage(
   dashboardHeader(title = "Dashboard"),
   dashboardSidebar(

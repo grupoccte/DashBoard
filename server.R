@@ -2,6 +2,8 @@ library(shiny)
 library(shinydashboard)
 library(DT)
 library(dplyr)
+require(devtools)
+require(rCharts)
 
 
 #Leitura base de dados gerais
@@ -47,13 +49,20 @@ shinyServer(function(input, output) {
   
   #Visao geral dos dados
   
-  #retorna tabela indicadores alunos
+  #retorna tabela indicadores gerais
   output$indicadoresGeral <- renderDataTable({
-    listaIndicadores <- data.frame(dicionarioBaseEvasao$INDICADOR)
-    colnames(listaIndicadores) <- c("Indicador")
+    listaVariaveis <- data.frame(dicionarioBaseDesempenho$Descrição.sobre.as.variáveis)
+    colnames(listaVariaveis) <- c("Indicador")
     DT::datatable(
-      listaIndicadores,options = list(paging = FALSE,searching = FALSE, 
+      listaVariaveis,options = list(paging = FALSE,searching = FALSE, 
                                       info = FALSE, scrollY = '300px')
+    )
+  })
+  #retorna tabela alunos gerias
+  output$alunosGeral <- renderDataTable({
+    listaAlunos <- as.data.frame(baseFiltrada()[,"Aluno"])
+    DT::datatable(
+      listaAlunos
     )
   })
   
