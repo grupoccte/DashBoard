@@ -43,9 +43,8 @@ shinyServer(function(input, output) {
   
   ##Base de acordo com os parametros escolhidos
   baseFiltrada <- reactive({
-    filter(baseGeral,Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
-  }) 
-  
+    a<- filter(baseGeral,Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
+  })
   
   #Visao geral dos dados
   
@@ -58,11 +57,13 @@ shinyServer(function(input, output) {
                                       info = FALSE, scrollY = '300px')
     )
   })
-  #retorna tabela alunos gerias
+  #retorna tabela alunos gerais
   output$alunosGeral <- renderDataTable({
-    listaAlunos <- as.data.frame(baseFiltrada()[,"Aluno"])
+    listaAlunos <- data.frame(baseFiltrada()$Aluno)
+    colnames(listaAlunos) <- c("Nome")
     DT::datatable(
-      listaAlunos
+      listaAlunos,options = list(paging = FALSE,searching = FALSE, 
+                                 info = FALSE, scrollY = '300px')
     )
   })
   
