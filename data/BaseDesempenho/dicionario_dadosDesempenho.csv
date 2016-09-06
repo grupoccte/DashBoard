@@ -1,0 +1,34 @@
+Variável;Descrição sobre as variáveis;Construto
+VAR01;Quantidade de diferentes locais (IP´s) a partir dos quais a(o) aluna(o) acessou o ambiente.;Estrut. do ambiente
+VAR02;Quantidade de mensagens enviadas por aluna(o) às(os) Professoras(es) pelo ambiente.;
+VAR03;Quantidade de mensagens enviadas por aluna(o) às(os) Tutor(es) pelo ambiente.;
+VAR04;Quantidade geral de mensagens enviadas pela(o) aluna(o) dentro do ambiente.;
+VAR05;Quantidade geral de mensagens recebidas pela(o) aluna(o) dentro do ambiente.;
+VAR06;"Quantidade de tópicos criados pelo(a) aluno(a) em fórum do tipo ""tira-dúvidas"".";Busca por Ajuda
+VAR07;"Quantidade de postagens no ""Fórum tira dúvidas"";";
+VAR08;Quant. de postagens de um(a) aluno(a) em fóruns que foram respondidas por outros(as) alunos(as).;
+VAR09;Quantidade de postagens de um(a) aluno(a) em fóruns que foram respondidas pelo(a) professor(a) ou tutor(a).;
+VAR10;Quantidade de colegas diferentes para quem o(a) aluno(a) enviou mensagens dentro do ambiente.;
+VAR12;"Quantidade de visualizações da aba ""Conteúdo"" do curso, onde constam os arquivos com o conteúdo programático do curso";
+VAR13;"Horário que mais realizou atividades;";
+VAR14;Turno do dia em que realizou mais atividades. ;Estratégia de Realização de Tarefa
+VAR16;"Quantidade de atividades entregues por um(a) aluno(a) fora do prazo, por disciplina;";
+VAR17;"Tempo médio entre a abertura da atividade e sua submissão;";
+VAR18;"Quantidade de leituras feitas ao fórum (pageviews);";
+VAR20;"Quantidade de respostas ao tópico principal (refazer opinião em fórum);";
+VAR21;"Quantidade de pageviews ao quadro de notas;";
+VAR22;Quantidade de vezes que o aluno visualiza o (Cheklist Atividades);Autoavaliação
+VAR23;"Quantidade de visualizações de notas por atividade; ";
+VAR24;Média semanal da quantidade de acessos de um(a) aluno(a) ao ambiente.;
+VAR25;"Tempo médio entre a criação de um tópico no fórum temático e a primeira postagem do aluno;";
+VAR28;"Quantidades de Time Out;";
+VAR31;Quantidade de acessos do(a) aluno(a) ao ambiente.;
+VAR31b;Quantidade de dias distintos que o aluno entrou na disciplina;Gestão do Tempo
+VAR31c;Quantidade de dias distintos que o aluno entrou na plataforma;
+VAR32a;Quantidade de acessos do(a) aluno(a) ao ambiente por turno (Manhã).;
+VAR32b;Quantidade de acessos do(a) aluno(a) ao ambiente por turno (Tarde).;
+VAR32c;Quantidade de acessos do(a) aluno(a) ao ambiente por turno (Noite).;
+VAR32d;Quantidade de acessos do(a) aluno(a) ao ambiente por turno (Madrugada).;
+VAR33;"Quantidade de atividades entregues por um(a) aluno(a) no prazo, por disciplina;";
+VAR34;Quantidade geral de postagens de um(a) aluno(a) em fóruns.;Estabelecimento de metas
+VAR35;Quantidade de respostas de um(a) professor(a) para as dúvidas de alunos(as) em fóruns.;
