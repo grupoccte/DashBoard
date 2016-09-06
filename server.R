@@ -18,9 +18,9 @@ shinyServer(function(input, output) {
   #Radio da aplicação
   output$radioApp <- renderUI({
     radioButtons("aplicacao","Seleciona a aplicação:", 
-                 choices =c("Visão geral dos dados" = "geral",
-                            "Análise de Desempenho" = "analiseDesempenho",
-                            "Análise de Evasão" = "analiseEvasao"),selected = "geral")
+                 choices =c("Visão geral dos dados" = 1,
+                            "Análise de Desempenho" = 2,
+                            "Análise de Evasão" = 3),selected = 1)
   })
   
   #Select para Curso
