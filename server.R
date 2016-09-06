@@ -68,6 +68,35 @@ shinyServer(function(input, output) {
   })
   
   #Analise de desempenho
+  baseFiltradaDese <- reactive({
+    a<- filter(baseDesempenho,Curso == input$curso, Periodo == input$periodo, Nome.da.Disciplina == input$disciplina)
+  })
+  
+  
+  
+  #retorna tabela indicadores Desempenho
+  output$indicadoresDesempenho <- renderDataTable({
+    listaVariaveis <- data.frame(dicionarioBaseDesempenho[,c("Descrição.sobre.as.variáveis", "Construto")])
+    colnames(listaVariaveis) <- c("Indicador", "Construto")
+    DT::datatable(
+      listaVariaveis,options = list(paging = FALSE,searching = FALSE, 
+                                    info = FALSE, scrollY = '300px', scrollX = '300px'),class = "compact",
+      selection = list(target = 'row',mode="single",selected=c(1))
+    )
+  })
+
+  #retorna tabela alunos Desempenho
+  output$alunosDesempenho <- renderDataTable({
+    listaAlunosDese <- data.frame(baseFiltradaDese()[,c("Nome.do.Aluno","DESEMPENHO_BINARIO")])
+    listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
+    listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório"
+    #listaSelect <- listaAlunos[]
+    colnames(listaAlunosDese) <- c("Nome", "Desempenho")
+    DT::datatable(
+      listaAlunosDese,options = list(paging = FALSE,searching = FALSE, 
+                                 info = FALSE, scrollY = '300px'),class = "compact"
+    )
+  })
   
   #Analise de evasao
 
