@@ -88,7 +88,8 @@ dashboardPage(
                            dataTableOutput("indicadoresEvasao")
                          ),
                          box(
-                           width=12,title = "Alunos",status = "primary",solidHeader = TRUE ,collapsible = TRUE
+                           width=12,title = "Alunos",status = "primary",solidHeader = TRUE ,collapsible = TRUE,
+                           dataTableOutput("alunosEvasao")
                          )
                        )
                      ))
