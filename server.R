@@ -9,7 +9,7 @@ require(rCharts)
 #Leitura base de dados gerais
 baseGeral <- read.csv2(file = "data/BaseGeral/base_desempenho.csv", encoding = "UTF-8")
 #Leitura base de dados evasao
-baseEvasao <- read.csv2(file = "data/BaseEvasão/base_evasao.csv", encoding = "UTF-8")
+baseEvasao <- read.csv2(file = "data/BaseEvasão/base_evasao.csv", encoding = "latin1")
 dicionarioBaseEvasao <- read.csv(file = "data/BaseEvasão/dicionario_dadosEvasao.csv", encoding = "UTF-8")#Leitura base de dados desempenho
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv")
@@ -22,28 +22,54 @@ shinyServer(function(input, output) {
                             "Análise de Desempenho" = 2,
                             "Análise de Evasão" = 3),selected = 1)
   })
-  
   #Select para Curso
   output$seletorCurso <- renderUI({
-    cursos <- as.character(unique(baseGeral$Curso))
-    selectInput("curso", "Escolha o Curso:", choices = (sort(cursos)))
+    if(input$aplicacao != 3){
+      cursos <- as.character(unique(baseGeral$Curso))
+      selectInput("curso", "Escolha o Curso:", choices = (sort(cursos)))  
+    }else{
+      cursos<- as.character(unique(baseEvasao$Curso))
+      selectInput("curso","Escolha o Curso:", choices = (sort(cursos)))
+    }
+    
   })
   #Select para o periodo a depender do curso escolhido
   output$seletorPeriodo <- renderUI({
-    periodos <- filter(baseGeral, Curso == input$curso)
-    showPeriodo <- sort(as.character(unique(periodos$Periodo)))
-    names(showPeriodo)<- paste(showPeriodo,"º Periodo")
-    selectInput("periodo", "Escolha o Periodo:", showPeriodo)
+    if(input$aplicacao != 3){
+      periodos <- filter(baseGeral, Curso == input$curso)
+      showPeriodo <- sort(as.character(unique(periodos$Periodo)))
+      names(showPeriodo)<- paste(showPeriodo,"º Periodo")
+      selectInput("periodo", "Escolha o Periodo:", showPeriodo)
+    }else{
+      periodos<- filter(baseEvasao,Curso == input$curso)
+      showPeriodo <- sort(as.character(unique(periodos$Periodo)))
+      names(showPeriodo)<- paste(showPeriodo,"º Periodo")
+      selectInput("periodo","Escolha o Periodo:",showPeriodo)
+    }
   })
   #Select da disciplina a depender do curso e do periodo escolhido
   output$seletorDisciplina <- renderUI({
-    disciplinas <- filter(baseGeral,Curso == input$curso, Periodo == input$periodo)
-    selectInput("disciplina","Escolha a Disciplina:",as.character(unique(disciplinas$Disciplina)))
+    if(input$aplicacao != 3){
+      disciplinas <- filter(baseGeral,Curso == input$curso, Periodo == input$periodo)
+      selectInput("disciplina","Escolha a Disciplina:",as.character(unique(disciplinas$Disciplina)))  
+    }else{
+      disciplinas <- filter(baseEvasao,Curso == input$curso, Periodo == input$periodo)
+      selectInput("disciplina","Escolha a Disciplina:",as.character(unique(disciplinas$Disciplina)))  
+    }
+    
   })
   
-  ##Base de acordo com os parametros escolhidos
+  
+  ##Base de acordo com os parametros escolhidos e de acordo com a base de dados
   baseFiltrada <- reactive({
-    a<- filter(baseGeral,Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
+    if(input$aplicacao == 1){
+      filter(baseGeral,Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
+    }else if(input$aplicacao == 2){
+      filter(baseDesempenho,Curso == input$curso, Periodo == input$periodo, Nome.da.Disciplina == input$disciplina)
+    }else{
+      filter(baseEvasao,Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
+    }
+    
   })
   
   #Visao geral dos dados
@@ -67,13 +93,6 @@ shinyServer(function(input, output) {
     )
   })
   
-  #Analise de desempenho
-  baseFiltradaDese <- reactive({
-    a<- filter(baseDesempenho,Curso == input$curso, Periodo == input$periodo, Nome.da.Disciplina == input$disciplina)
-  })
-  
-  
-  
   #retorna tabela indicadores Desempenho
   output$indicadoresDesempenho <- renderDataTable({
     listaVariaveis <- data.frame(dicionarioBaseDesempenho[,c("Descrição.sobre.as.variáveis", "Construto")])
@@ -85,14 +104,11 @@ shinyServer(function(input, output) {
     )
   })
   
-  
-  
   #retorna tabela alunos Desempenho
   output$alunosDesempenho <- renderDataTable({
-    listaAlunosDese <- data.frame(baseFiltradaDese()[,c("Nome.do.Aluno","DESEMPENHO_BINARIO")])
+    listaAlunosDese <- data.frame(baseFiltrada()[,c("Nome.do.Aluno","DESEMPENHO_BINARIO")])
     listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
     listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório"
-    #listaSelect <- listaAlunos[]
     colnames(listaAlunosDese) <- c("Nome", "Desempenho")
     DT::datatable(
       listaAlunosDese,options = list(paging = FALSE,searching = FALSE, 
@@ -101,6 +117,8 @@ shinyServer(function(input, output) {
   })
   
   #Analise de evasao
+  
+  #retorna tabela de indicadores evasao
   output$indicadoresEvasao <- renderDataTable({
     listaVariaveis <- data.frame(dicionarioBaseEvasao[,c("INDICADOR","CONSTRUTOS")])
     colnames(listaVariaveis) <- c("Indicador","Construto")
@@ -109,5 +127,17 @@ shinyServer(function(input, output) {
                                     info = FALSE, scrollY = '300px')
     )
   })
+  #retorna tabela de alunos evasao
+  output$alunosEvasao <- renderDataTable({
+    listaAlunosEvasao <- data.frame(baseFiltrada()[,c("Aluno","EVASAO")])
+    listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 0] <- "Baixo"
+    listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 1] <- "Alto"
+    colnames(listaAlunosEvasao) <- c("Nome", "Risco")
+    DT::datatable(
+      listaAlunosEvasao,options = list(paging = FALSE,searching = FALSE, 
+                                     info = FALSE, scrollY = '300px'),class = "compact"
+    )
+  })
+  
   
 })
