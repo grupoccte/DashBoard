@@ -139,5 +139,38 @@ shinyServer(function(input, output) {
     )
   })
   
+  #infoBoxes
+  variavelClasseEvasao <- reactive({
+    table(baseFiltrada()$EVASAO)
+  })
   
+  #Retorna a % Baixo Risco EVASAO = 0
+  variavelBaixoRisco <- reactive({
+    if(is.na(variavelClasseEvasao()[1])){
+      0
+    }else{
+      round((variavelClasseEvasao()[1]/count(baseFiltrada()))*100,2) 
+    }
+  })
+  #Retorna a % Alto Risco EVASAO = 1
+  variavelAltoRisco <- reactive({
+    if(is.na(variavelClasseEvasao()[2])){
+      0
+    }else{
+      round((variavelClasseEvasao()[2]/count(baseFiltrada()))*100,2) 
+    }
+  })
+  
+  output$AltoRiscoBox <- renderValueBox({
+    valueBox(
+      paste0(variavelAltoRisco(), "%"), "Alto Risco", icon = icon("thumbs-down", lib = "glyphicon"),
+      color = "red"
+    )
+  })
+  output$BaixoRiscoBox <- renderValueBox({
+    valueBox(
+      paste0(variavelBaixoRisco(), "%"), "Baixo Risco", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "green"
+    )
+  })
 })
