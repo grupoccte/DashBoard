@@ -48,6 +48,8 @@ dashboardPage(
                      fluidRow(
                        column(
                          width=8,
+                         valueBoxOutput("SatisfatorioBox", width = 6),
+                         valueBoxOutput("InsatisfatorioBox",width = 6),
                          tabBox(
                            side = "left", width = 12,
                            selected = "Geral",
@@ -73,6 +75,8 @@ dashboardPage(
                      fluidRow(
                        column(
                          width=8,
+                         valueBoxOutput("AltoRiscoBox", width = 6),
+                         valueBoxOutput("BaixoRiscoBox",width = 6),
                          tabBox(
                            side = "left", width = 12,
                            selected = "Geral",

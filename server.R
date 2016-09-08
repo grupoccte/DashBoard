@@ -116,6 +116,42 @@ shinyServer(function(input, output) {
     )
   })
   
+  #infoBoxes
+  variavelClasseDesempenho <- reactive({
+    table(baseFiltrada()$DESEMPENHO_BINARIO)
+  })
+  
+  #Retorna a % Satisfatorio DESEMPENHO_BINARIO = 0
+  variavelSatisfatorio <- reactive({
+    if(is.na(variavelClasseDesempenho()[1])){
+      0
+    }else{
+      round((variavelClasseDesempenho()[1]/count(baseFiltrada()))*100,2) 
+    }
+  })
+  #Retorna a % Insatisfatorio DESEMPENHO_BINARIO = 1
+  variavelInsatisfatorio <- reactive({
+    if(is.na(variavelClasseDesempenho()[2])){
+      0
+    }else{
+      round((variavelClasseDesempenho()[2]/count(baseFiltrada()))*100,2) 
+    }
+  })
+  
+  output$SatisfatorioBox <- renderValueBox({
+    valueBox(
+      paste0(variavelSatisfatorio(), "%"), "Satisfatório", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "green"
+    )
+  })
+  output$InsatisfatorioBox <- renderValueBox({
+    valueBox(
+      paste0(variavelInsatisfatorio(), "%"), "Insatisfatório", icon = icon("thumbs-down", lib = "glyphicon"),
+      color = "red"
+    )
+  })
+  
+  
   #Analise de evasao
   
   #retorna tabela de indicadores evasao
@@ -139,5 +175,38 @@ shinyServer(function(input, output) {
     )
   })
   
+  #infoBoxes
+  variavelClasseEvasao <- reactive({
+    table(baseFiltrada()$EVASAO)
+  })
   
+  #Retorna a % Baixo Risco EVASAO = 0
+  variavelBaixoRisco <- reactive({
+    if(is.na(variavelClasseEvasao()[1])){
+      0
+    }else{
+      round((variavelClasseEvasao()[1]/count(baseFiltrada()))*100,2) 
+    }
+  })
+  #Retorna a % Alto Risco EVASAO = 1
+  variavelAltoRisco <- reactive({
+    if(is.na(variavelClasseEvasao()[2])){
+      0
+    }else{
+      round((variavelClasseEvasao()[2]/count(baseFiltrada()))*100,2) 
+    }
+  })
+  
+  output$AltoRiscoBox <- renderValueBox({
+    valueBox(
+      paste0(variavelAltoRisco(), "%"), "Alto Risco", icon = icon("thumbs-down", lib = "glyphicon"),
+      color = "red"
+    )
+  })
+  output$BaixoRiscoBox <- renderValueBox({
+    valueBox(
+      paste0(variavelBaixoRisco(), "%"), "Baixo Risco", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "green"
+    )
+  })
 })
