@@ -116,6 +116,42 @@ shinyServer(function(input, output) {
     )
   })
   
+  #infoBoxes
+  variavelClasseDesempenho <- reactive({
+    table(baseFiltrada()$DESEMPENHO_BINARIO)
+  })
+  
+  #Retorna a % Satisfatorio DESEMPENHO_BINARIO = 0
+  variavelSatisfatorio <- reactive({
+    if(is.na(variavelClasseDesempenho()[1])){
+      0
+    }else{
+      round((variavelClasseDesempenho()[1]/count(baseFiltrada()))*100,2) 
+    }
+  })
+  #Retorna a % Insatisfatorio DESEMPENHO_BINARIO = 1
+  variavelInsatisfatorio <- reactive({
+    if(is.na(variavelClasseDesempenho()[2])){
+      0
+    }else{
+      round((variavelClasseDesempenho()[2]/count(baseFiltrada()))*100,2) 
+    }
+  })
+  
+  output$SatisfatorioBox <- renderValueBox({
+    valueBox(
+      paste0(variavelSatisfatorio(), "%"), "Satisfatório", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "green"
+    )
+  })
+  output$InsatisfatorioBox <- renderValueBox({
+    valueBox(
+      paste0(variavelInsatisfatorio(), "%"), "Insatisfatório", icon = icon("thumbs-down", lib = "glyphicon"),
+      color = "red"
+    )
+  })
+  
+  
   #Analise de evasao
   
   #retorna tabela de indicadores evasao
