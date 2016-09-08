@@ -25,7 +25,7 @@ dashboardPage(
                          tabBox(
                            side = "left", width = 12,
                            selected = "Geral",
-                           tabPanel("Geral", ""),
+                           tabPanel("Geral", showOutput("graficoGeral", "nvd3")),
                            tabPanel("Indicadores", ""),
                            tabPanel("Alunos", "")
                          )

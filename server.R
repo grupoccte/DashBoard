@@ -14,6 +14,17 @@ dicionarioBaseEvasao <- read.csv(file = "data/BaseEvasão/dicionario_dadosEvasao
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv")
 
+#Calculo de médias, máximos e mínimos para análise geral
+
+colVariaveis <- select(baseGeral, one_of(as.character(dicionarioBaseDesempenho$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
+visGeralIndicadores <- data.frame(
+  Indicador = paste("Ind", c(1:ncol(colVariaveis))),
+  Min = sapply(select(baseGeral, c(5:41)), min), 
+  Média = colMeans(select(baseGeral, c(5:41))), 
+  Max = sapply(select(baseGeral, c(5:41)), max)
+)
+
+
 shinyServer(function(input, output) {
   #Radio da aplicação
   output$radioApp <- renderUI({
@@ -65,6 +76,16 @@ shinyServer(function(input, output) {
       listaAlunos,options = list(paging = FALSE,searching = FALSE, 
                                  info = FALSE, scrollY = '300px')
     )
+  })
+  
+  output$graficoGeral <- renderChart2({
+    indSelecionados <- input$indicadoresGeral_rows_selected
+    if(is.null(indSelecionados)) {
+      indSelecionados <- c(1:nrow(dicionarioBaseDesempenho))
+    }
+    g <- nPlot(Média ~ Indicador, data = visGeralIndicadores[indSelecionados,], type = 'multiBarHorizontalChart', width = 600)
+    g$chart(showControls = F)
+    g
   })
   
   #Analise de desempenho
