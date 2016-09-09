@@ -19,10 +19,10 @@ dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dad
 colVariaveis <- select(baseGeral, one_of(as.character(dicionarioBaseDesempenho$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
 visGeralIndicadores <- data.frame(
   Indicador = paste("Ind", c(1:ncol(colVariaveis))),
-  Min = sapply(select(baseGeral, c(5:41)), min), 
-  Média = colMeans(select(baseGeral, c(5:41))), 
-  Max = sapply(select(baseGeral, c(5:41)), max)
-)
+  Min = sapply(colVariaveis, min), 
+  Média = colMeans(colVariaveis), 
+  Max = sapply(colVariaveis, max)
+) 
 
 
 shinyServer(function(input, output) {
