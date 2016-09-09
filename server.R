@@ -33,54 +33,68 @@ shinyServer(function(input, output) {
                             "Análise de Desempenho" = 2,
                             "Análise de Evasão" = 3),selected = 1)
   })
+  
+  #Base em função do radio
+  baseInputs <- reactive({
+    if(!is.null(input$aplicacao)) {
+      if(input$aplicacao != 3) {
+        baseGeral
+      } else {
+        baseEvasao
+      }
+    } else {
+      NULL
+    }
+  })
+  
   #Select para Curso
   output$seletorCurso <- renderUI({
-    if(input$aplicacao != 3){
-      cursos <- as.character(unique(baseGeral$Curso))
-      selectInput("curso", "Escolha o Curso:", choices = (sort(cursos)))  
-    }else{
-      cursos<- as.character(unique(baseEvasao$Curso))
-      selectInput("curso","Escolha o Curso:", choices = (sort(cursos)))
+    if(!is.null(input$aplicacao)) {
+      cursos <- sort(as.character(unique(baseInputs()$Curso)))
+    } else {
+      cursos <- NULL
     }
-    
+    selectInput("curso", "Escolha o Curso:", cursos)
   })
+  
   #Select para o periodo a depender do curso escolhido
   output$seletorPeriodo <- renderUI({
-    if(input$aplicacao != 3){
-      periodos <- filter(baseGeral, Curso == input$curso)
+    if(!is.null(input$curso) && input$curso != "") {
+      periodos<- filter(baseInputs(), Curso == input$curso)
       showPeriodo <- sort(as.character(unique(periodos$Periodo)))
-      names(showPeriodo)<- paste(showPeriodo,"º Periodo")
-      selectInput("periodo", "Escolha o Periodo:", showPeriodo)
-    }else{
-      periodos<- filter(baseEvasao,Curso == input$curso)
-      showPeriodo <- sort(as.character(unique(periodos$Periodo)))
-      names(showPeriodo)<- paste(showPeriodo,"º Periodo")
-      selectInput("periodo","Escolha o Periodo:",showPeriodo)
+      if(length(showPeriodo) > 0) {
+        names(showPeriodo) <- paste(showPeriodo, "º Periodo")
+      }
+    } else {
+      showPeriodo <- NULL
     }
+    selectInput("periodo", "Escolha o Periodo:", showPeriodo)
   })
+  
   #Select da disciplina a depender do curso e do periodo escolhido
   output$seletorDisciplina <- renderUI({
-    if(input$aplicacao != 3){
-      disciplinas <- filter(baseGeral,Curso == input$curso, Periodo == input$periodo)
-      selectInput("disciplina","Escolha a Disciplina:",as.character(unique(disciplinas$Disciplina)))  
-    }else{
-      disciplinas <- filter(baseEvasao,Curso == input$curso, Periodo == input$periodo)
-      selectInput("disciplina","Escolha a Disciplina:",as.character(unique(disciplinas$Disciplina)))  
+    if(!is.null(input$curso) && input$curso != "" && !is.null(input$periodo) && input$periodo != "") {
+      disciplinas <- filter(baseInputs(), Curso == input$curso, Periodo == input$periodo)
+    } else {
+      disciplinas <- NULL
     }
-    
+    selectInput("disciplina","Escolha a Disciplina:",as.character(unique(disciplinas$Disciplina)))
   })
   
   
   ##Base de acordo com os parametros escolhidos e de acordo com a base de dados
   baseFiltrada <- reactive({
-    if(input$aplicacao == 1){
-      filter(baseGeral,Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
-    }else if(input$aplicacao == 2){
-      filter(baseDesempenho,Curso == input$curso, Periodo == input$periodo, Nome.da.Disciplina == input$disciplina)
-    }else{
-      filter(baseEvasao,Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
+    if(!is.null(input$aplicacao)) {
+      if(input$aplicacao == 1){
+        filter(baseGeral, Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
+      }else if(input$aplicacao == 2){
+        filter(baseDesempenho, Curso == input$curso, Periodo == input$periodo, Nome.da.Disciplina == input$disciplina)
+      }else{
+        filter(baseEvasao, Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
+      }
+    } else {
+      NULL
     }
-    
   })
   
   #Visao geral dos dados
@@ -90,17 +104,32 @@ shinyServer(function(input, output) {
     listaVariaveis <- data.frame(dicionarioBaseDesempenho$Descrição.sobre.as.variáveis)
     colnames(listaVariaveis) <- c("Indicador")
     DT::datatable(
-      listaVariaveis,options = list(paging = FALSE,searching = FALSE, 
-                                    info = FALSE, scrollY = '300px')
+      listaVariaveis,
+      options = list(
+        paging = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        scrollY = '300px'
+      )
     )
   })
+  
   #retorna tabela alunos gerais
   output$alunosGeral <- renderDataTable({
-    listaAlunos <- data.frame(baseFiltrada()$Aluno)
-    colnames(listaAlunos) <- c("Nome")
+    if(!is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
+      listaAlunos <- select(baseFiltrada(), Aluno);
+      colnames(listaAlunos) <- c("Nome")
+    } else {
+      listaAlunos <- NULL
+    }
     DT::datatable(
-      listaAlunos,options = list(paging = FALSE,searching = FALSE, 
-                                 info = FALSE, scrollY = '300px')
+      listaAlunos, 
+      options = list(
+        paging = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        scrollY = '300px'
+      )
     )
   })
   
@@ -121,55 +150,62 @@ shinyServer(function(input, output) {
     listaVariaveis <- data.frame(dicionarioBaseDesempenho[,c("Descrição.sobre.as.variáveis", "Construto")])
     colnames(listaVariaveis) <- c("Indicador", "Construto")
     DT::datatable(
-      listaVariaveis,options = list(paging = FALSE,searching = FALSE, 
-                                    info = FALSE, scrollY = '300px', scrollX = '300px'),class = "compact",
+      listaVariaveis,
+      options = list(
+        paging = FALSE,
+        searching = FALSE,
+        info = FALSE, scrollY = '300px',
+        scrollX = '300px'),
+      class = "compact",
       selection = list(target = 'row',mode="single",selected=c(1))
     )
   })
   
   #retorna tabela alunos Desempenho
   output$alunosDesempenho <- renderDataTable({
-    listaAlunosDese <- data.frame(baseFiltrada()[,c("Nome.do.Aluno","DESEMPENHO_BINARIO")])
-    listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
-    listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório"
-    colnames(listaAlunosDese) <- c("Nome", "Desempenho")
+    if(!is.null(input$aplicacao) && input$aplicacao == 2) {
+      listaAlunosDese <- data.frame(baseFiltrada()[,c("Nome.do.Aluno","DESEMPENHO_BINARIO")])
+      listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
+      listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório";
+      colnames(listaAlunosDese) <- c("Nome", "Desempenho")
+    } else {
+      listaAlunosDese <- NULL
+    }
     DT::datatable(
-      listaAlunosDese,options = list(paging = FALSE,searching = FALSE, 
-                                     info = FALSE, scrollY = '300px'),class = "compact"
+      listaAlunosDese,
+      options = list(
+        paging = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        scrollY = '300px'),
+      class = "compact"
     )
   })
   
-  #infoBoxes
-  variavelClasseDesempenho <- reactive({
-    table(baseFiltrada()$DESEMPENHO_BINARIO)
-  })
+  #infoBoxes de desempenho
   
-  #Retorna a % Satisfatorio DESEMPENHO_BINARIO = 0
-  variavelSatisfatorio <- reactive({
-    if(is.na(variavelClasseDesempenho()[1])){
-      0
-    }else{
-      round((variavelClasseDesempenho()[1]/count(baseFiltrada()))*100,2) 
-    }
-  })
-  #Retorna a % Insatisfatorio DESEMPENHO_BINARIO = 1
-  variavelInsatisfatorio <- reactive({
-    if(is.na(variavelClasseDesempenho()[2])){
-      0
-    }else{
-      round((variavelClasseDesempenho()[2]/count(baseFiltrada()))*100,2) 
-    }
-  })
-  
+  #BoxDesempenho satisfatório
   output$SatisfatorioBox <- renderValueBox({
+    desempenhoSatisfatorio <- 0
+    if(!is.null(input$aplicacao) && input$aplicacao == 2) {
+      classesSat <- table(baseFiltrada()$DESEMPENHO_BINARIO)
+      desempenhoSatisfatorio <-round((classesSat[1] / nrow(baseFiltrada())) * 100, 2)
+    }
     valueBox(
-      paste0(variavelSatisfatorio(), "%"), "Satisfatório", icon = icon("thumbs-up", lib = "glyphicon"),
+      paste0(desempenhoSatisfatorio, "%"), "Satisfatório", icon = icon("thumbs-up", lib = "glyphicon"),
       color = "green"
     )
   })
+  
+  #BoxDesempenho insatisfatório
   output$InsatisfatorioBox <- renderValueBox({
+    desempenhoInsatisfatorio <- 0
+    if(!is.null(input$aplicacao) && input$aplicacao == 2) {
+      classesSat <- table(baseFiltrada()$DESEMPENHO_BINARIO)
+      desempenhoInsatisfatorio <-round((classesSat[2] / nrow(baseFiltrada())) * 100, 2)
+    }
     valueBox(
-      paste0(variavelInsatisfatorio(), "%"), "Insatisfatório", icon = icon("thumbs-down", lib = "glyphicon"),
+      paste0(desempenhoInsatisfatorio, "%"), "Insatisfatório", icon = icon("thumbs-down", lib = "glyphicon"),
       color = "red"
     )
   })
@@ -181,54 +217,62 @@ shinyServer(function(input, output) {
     listaVariaveis <- data.frame(dicionarioBaseEvasao[,c("INDICADOR","CONSTRUTOS")])
     colnames(listaVariaveis) <- c("Indicador","Construto")
     DT::datatable(
-      listaVariaveis,options = list(paging = FALSE,searching = FALSE, 
-                                    info = FALSE, scrollY = '300px')
+      listaVariaveis,options = list(
+        paging = FALSE,
+        searching = FALSE,
+        nfo = FALSE, 
+        scrollY = '300px'
+      )
     )
   })
+  
   #retorna tabela de alunos evasao
   output$alunosEvasao <- renderDataTable({
-    listaAlunosEvasao <- data.frame(baseFiltrada()[,c("Aluno","EVASAO")])
-    listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 0] <- "Baixo"
-    listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 1] <- "Alto"
-    colnames(listaAlunosEvasao) <- c("Nome", "Risco")
+    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
+      listaAlunosEvasao <- data.frame(baseFiltrada()[,c("Aluno","EVASAO")])
+      listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 0] <- "Baixo"
+      listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 1] <- "Alto"
+      colnames(listaAlunosEvasao) <- c("Nome", "Risco")
+    } else {
+      listaAlunosEvasao <- NULL
+    }
     DT::datatable(
-      listaAlunosEvasao,options = list(paging = FALSE,searching = FALSE, 
-                                     info = FALSE, scrollY = '300px'),class = "compact"
+      listaAlunosEvasao,
+      options = list(
+        paging = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        scrollY = '300px'),
+      class = "compact"
     )
   })
   
-  #infoBoxes
-  variavelClasseEvasao <- reactive({
-    table(baseFiltrada()$EVASAO)
-  })
+  #infoBoxes de evasão
   
-  #Retorna a % Baixo Risco EVASAO = 0
-  variavelBaixoRisco <- reactive({
-    if(is.na(variavelClasseEvasao()[1])){
-      0
-    }else{
-      round((variavelClasseEvasao()[1]/count(baseFiltrada()))*100,2) 
-    }
-  })
-  #Retorna a % Alto Risco EVASAO = 1
-  variavelAltoRisco <- reactive({
-    if(is.na(variavelClasseEvasao()[2])){
-      0
-    }else{
-      round((variavelClasseEvasao()[2]/count(baseFiltrada()))*100,2) 
-    }
-  })
-  
-  output$AltoRiscoBox <- renderValueBox({
-    valueBox(
-      paste0(variavelAltoRisco(), "%"), "Alto Risco", icon = icon("thumbs-down", lib = "glyphicon"),
-      color = "red"
-    )
-  })
+  #BoxEvasao baixo risco
   output$BaixoRiscoBox <- renderValueBox({
+    baixoRisco <- 0 
+    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
+      classesSat <- table(baseFiltrada()$EVASAO)
+      baixoRisco <- round((classesSat[1] / nrow(baseFiltrada())) * 100, 2)
+    }
     valueBox(
-      paste0(variavelBaixoRisco(), "%"), "Baixo Risco", icon = icon("thumbs-up", lib = "glyphicon"),
+      paste0(baixoRisco, "%"), "Baixo Risco", icon = icon("thumbs-up", lib = "glyphicon"),
       color = "green"
     )
   })
+  
+  #BoxEvasao alto risco
+  output$AltoRiscoBox <- renderValueBox({ 
+    altoRisco <- 0
+    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
+      classesSat <- table(baseFiltrada()$EVASAO)
+      altoRisco <- round((classesSat[1] / nrow(baseFiltrada())) * 100, 2)
+    }
+    valueBox(
+      paste0(altoRisco, "%"), "Alto Risco", icon = icon("thumbs-down", lib = "glyphicon"),
+      color = "red"
+    )
+  })
+  
 })
