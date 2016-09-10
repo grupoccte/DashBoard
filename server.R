@@ -380,8 +380,8 @@ shinyServer(function(input, output) {
   output$BaixoRiscoBox <- renderValueBox({
     baixoRisco <- 0 
     if(!is.null(input$aplicacao) && input$aplicacao == 3) {
-      classesSat <- table(baseFiltrada()$EVASAO)
-      baixoRisco <- round((classesSat[1] / nrow(baseFiltrada())) * 100, 2)
+      classesEvas <- table(baseFiltrada()$EVASAO)
+      baixoRisco <- round((classesEvas[1] / nrow(baseFiltrada())) * 100, 2)
     }
     valueBox(
       paste0(baixoRisco, "%"), "Baixo Risco", icon = icon("thumbs-up", lib = "glyphicon"),
@@ -393,8 +393,8 @@ shinyServer(function(input, output) {
   output$AltoRiscoBox <- renderValueBox({ 
     altoRisco <- 0
     if(!is.null(input$aplicacao) && input$aplicacao == 3) {
-      classesSat <- table(baseFiltrada()$EVASAO)
-      altoRisco <- round((classesSat[1] / nrow(baseFiltrada())) * 100, 2)
+      classesEvas <- table(baseFiltrada()$EVASAO)
+      altoRisco <- round((classesEvas[2] / nrow(baseFiltrada())) * 100, 2)
     }
     valueBox(
       paste0(altoRisco, "%"), "Alto Risco", icon = icon("thumbs-down", lib = "glyphicon"),
