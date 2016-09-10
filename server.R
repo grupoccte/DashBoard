@@ -14,16 +14,66 @@ dicionarioBaseEvasao <- read.csv(file = "data/BaseEvasão/dicionario_dadosEvasao
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv")
 
-#Calculo de médias, máximos e mínimos para análise geral
+#::Calculo de médias, máximos e mínimos para análise geral
 
 colVariaveis <- select(baseGeral, one_of(as.character(dicionarioBaseDesempenho$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
 visGeralIndicadores <- data.frame(
   Indicador = paste("Ind", c(1:ncol(colVariaveis))),
   Min = sapply(colVariaveis, min), 
-  Média = colMeans(colVariaveis), 
+  Média = colMeans(colVariaveis),
   Max = sapply(colVariaveis, max)
 ) 
 
+#::Dados p/ análise de desempenho
+
+#Construtos de variáveis, gera um dataframe associando um construto a uma range de variáveis (ex: Busca por ajuda - 6:12)
+
+anterior <- ""
+Construto <- c()
+Varinicial <- c()
+Varfinal <- c()
+
+for(i in 1:nrow(dicionarioBaseDesempenho)) {
+  atual <- as.character(dicionarioBaseDesempenho[i,"Construto"])
+  if(atual != "" && atual != anterior) {
+    Construto <- c(Construto, atual)
+    anterior = atual
+    Varinicial <- c(Varinicial, i)
+    if(i != 1) {
+      Varfinal <- c(Varfinal, i - 1)
+    }
+  }
+}
+Varfinal <- c(Varfinal, nrow(dicionarioBaseDesempenho))
+
+DFconstrutosDesempenho <- data.frame(Construto, Varinicial, Varfinal)
+
+#Tratamento de dados para plotagem de gráfico de desempenho
+colVariaveisSat <- select(filter(baseDesempenho, DESEMPENHO_BINARIO == "0"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
+colVariaveisInsat <- select(filter(baseDesempenho, DESEMPENHO_BINARIO == "1"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
+
+dadosDesempenho <- data.frame(
+  Indicador = c(
+    paste("Ind", c(1:ncol(colVariaveisSat))), 
+    paste("Ind", c(1:ncol(colVariaveisSat)))
+  ),
+  Min = c(
+    Min = sapply(colVariaveisSat, min),
+    Min = sapply(colVariaveisInsat, min)
+  ),
+  Média = c(
+    colMeans(colVariaveisSat),
+    colMeans(colVariaveisInsat)
+  ),
+  Max = c(
+    sapply(colVariaveisSat, max),
+    sapply(colVariaveisInsat, max)
+  ),
+  Desempenho = c(
+    rep("Satisfatório", each = ncol(colVariaveisSat)),
+    rep("Insatisfatório", each = ncol(colVariaveisInsat))
+  )
+)
 
 shinyServer(function(input, output) {
   #Radio da aplicação
@@ -144,20 +194,45 @@ shinyServer(function(input, output) {
   })
   
   #Analise de desempenho
+  
+  INcheckboxesDesempenho <- reactive({
+    checkboxes <- grep("constdesemp_", names(input))
+    qtd <- length(checkboxes)
+    construtos <- c()
+    for(i in 1:qtd) {
+      if(!is.null(input[[c(paste("constdesemp_", i, sep = ""))]]) && input[[c(paste("constdesemp_", i, sep = ""))]] == TRUE) {
+        construtos <- c(construtos, i)
+      }
+    }
+    construtos
+  })
 
   #retorna tabela indicadores Desempenho
   output$indicadoresDesempenho <- renderDataTable({
+
+    construtosCheckBox <- INcheckboxesDesempenho()
+    
     listaVariaveis <- data.frame(dicionarioBaseDesempenho[,c("Descrição.sobre.as.variáveis", "Construto")])
     colnames(listaVariaveis) <- c("Indicador", "Construto")
+    
+    if(!is.null(construtosCheckBox)) {
+      filtroVariaveis <- c()
+      for(i in construtosCheckBox) {
+        filtroVariaveis <- c(filtroVariaveis, DFconstrutosDesempenho[i,]$Varinicial:DFconstrutosDesempenho[i,]$Varfinal)
+      }
+    } else {
+      filtroVariaveis <- c(1:nrow(listaVariaveis))
+    }
+    
     DT::datatable(
-      listaVariaveis,
+      listaVariaveis[filtroVariaveis,],
       options = list(
         paging = FALSE,
         searching = FALSE,
         info = FALSE, scrollY = '300px',
         scrollX = '300px'),
       class = "compact",
-      selection = list(target = 'row',mode="single",selected=c(1))
+      selection = list(target = 'row', mode="multiple")
     )
   })
   
@@ -207,6 +282,58 @@ shinyServer(function(input, output) {
     valueBox(
       paste0(desempenhoInsatisfatorio, "%"), "Insatisfatório", icon = icon("thumbs-down", lib = "glyphicon"),
       color = "red"
+    )
+  })
+  
+  output$graficoDesempenho <- renderChart2({
+    indSelecionados <- input$indicadoresDesempenho_rows_selected
+    if(is.null(indSelecionados)) {
+      construtosCheckBox <- INcheckboxesDesempenho()
+      if(!is.null(construtosCheckBox)) {
+        indSelecionados <- c()
+        for(i in construtosCheckBox) {
+          indSelecionados <- c(indSelecionados, DFconstrutosDesempenho[i,]$Varinicial:DFconstrutosDesempenho[i,]$Varfinal)
+        }
+      } else {
+        indSelecionados <- c(1:nrow(dicionarioBaseDesempenho))
+      }
+    }
+    indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseDesempenho))
+    nPlot(Média ~ Indicador, data = dadosDesempenho[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
+  })
+  
+  output$construtosDesempenho <- renderUI({
+    colunas <- list()
+    colunas[[1]] <- list()
+    colunas[[2]] <- list()
+    colunas[[3]] <- list()
+    totalconstrutos <- nrow(DFconstrutosDesempenho)
+    construtosporcol <- round(totalconstrutos / 3, 0)
+    
+    colat <- 1
+    nsel <- 1
+    for(i in 1:nrow(DFconstrutosDesempenho)) {
+      colunas[[colat]][[nsel]] <- checkboxInput(paste("constdesemp_", i, sep = ""), DFconstrutosDesempenho[i,]$Construto, FALSE)
+      nsel <- nsel + 1
+      if(nsel > construtosporcol) {
+        colat <- colat + 1
+        nsel <- 1
+      }
+    }
+    
+    fluidRow(
+      column(
+        width=4,
+        colunas[[1]]
+      ),
+      column(
+        width=4,
+        colunas[[2]]
+      ),
+      column(
+        width=4,
+        colunas[[3]]
+      )
     )
   })
   
