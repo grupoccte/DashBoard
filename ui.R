@@ -83,7 +83,10 @@ dashboardPage(
                          tabBox(
                            side = "left", width = 12,
                            selected = "Geral",
-                           tabPanel("Geral", ""),
+                           tabPanel("Geral",
+                                    showOutput("graficoEvasao", "nvd3"),
+                                    uiOutput("construtosEvasao")
+                           ),
                            tabPanel("Indicadores", ""),
                            tabPanel("Alunos", "")
                          )

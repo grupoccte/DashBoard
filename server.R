@@ -11,6 +11,8 @@ baseGeral <- read.csv2(file = "data/BaseGeral/base_desempenho.csv", encoding = "
 #Leitura base de dados evasao
 baseEvasao <- read.csv2(file = "data/BaseEvasão/base_evasao.csv", encoding = "latin1")
 dicionarioBaseEvasao <- read.csv(file = "data/BaseEvasão/dicionario_dadosEvasao.csv", encoding = "UTF-8")#Leitura base de dados desempenho
+dicionarioBaseEvasao <- dicionarioBaseEvasao[with(dicionarioBaseEvasao, order(CONSTRUTOS)), ] #ordenação pela coluna de construto para facilitar os checkboxes dinâmicos sem repetição
+rownames(dicionarioBaseEvasao) <- NULL #Correção para o número das linhas após ordenação
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv")
 
@@ -74,6 +76,55 @@ dadosDesempenho <- data.frame(
     rep("Insatisfatório", each = ncol(colVariaveisInsat))
   )
 )
+
+#Tratamento de dados para plotagem de gráfico de evasão
+colVariaveisBaixoRisco <- select(filter(baseEvasao, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
+colVariaveisAltoRisco <- select(filter(baseEvasao, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
+
+dadosEvasao <- data.frame(
+  Indicador = c(
+    paste("Ind", c(1:ncol(colVariaveisBaixoRisco))), 
+    paste("Ind", c(1:ncol(colVariaveisBaixoRisco)))
+  ),
+  Min = c(
+    Min = sapply(colVariaveisAltoRisco, min),
+    Min = sapply(colVariaveisBaixoRisco, min)
+  ),
+  Média = c(
+    colMeans(colVariaveisAltoRisco),
+    colMeans(colVariaveisBaixoRisco)
+  ),
+  Max = c(
+    sapply(colVariaveisAltoRisco, max),
+    sapply(colVariaveisBaixoRisco, max)
+  ),
+  RiscoEvasao = c(
+    rep("Alto risco", each = ncol(colVariaveisAltoRisco)),
+    rep("Baixo risco", each = ncol(colVariaveisBaixoRisco))
+  )
+)
+
+#Construtos de evasão
+
+anterior <- ""
+Construto <- c()
+Varinicial <- c()
+Varfinal <- c()
+
+for(i in 1:nrow(dicionarioBaseEvasao)) {
+  atual <- as.character(dicionarioBaseEvasao[i,"CONSTRUTOS"])
+  if(atual != "" && atual != anterior) {
+    Construto <- c(Construto, atual)
+    anterior = atual
+    Varinicial <- c(Varinicial, i)
+    if(i != 1) {
+      Varfinal <- c(Varfinal, i - 1)
+    }
+  }
+}
+Varfinal <- c(Varfinal, nrow(dicionarioBaseEvasao))
+
+DFconstrutosEvasao <- data.frame(Construto, Varinicial, Varfinal)
 
 shinyServer(function(input, output) {
   #Radio da aplicação
@@ -302,9 +353,11 @@ shinyServer(function(input, output) {
     nPlot(Média ~ Indicador, data = dadosDesempenho[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
   })
   
+  #Checkboxes p/ construtos de desempenho
+  
   output$construtosDesempenho <- renderUI({
-    colunas <- list()
-    colunas[[1]] <- list()
+    colunas <- list() #lista de colunas
+    colunas[[1]] <- list() #cada coluna tem uma lista de checkboxes
     colunas[[2]] <- list()
     colunas[[3]] <- list()
     totalconstrutos <- nrow(DFconstrutosDesempenho)
@@ -339,15 +392,40 @@ shinyServer(function(input, output) {
   
   #Analise de evasao
   
+  INcheckboxesEvasao <- reactive({
+    checkboxes <- grep("constevas_", names(input))
+    qtd <- length(checkboxes)
+    construtos <- c()
+    for(i in 1:qtd) {
+      if(!is.null(input[[c(paste("constevas_", i, sep = ""))]]) && input[[c(paste("constevas_", i, sep = ""))]] == TRUE) {
+        construtos <- c(construtos, i)
+      }
+    }
+    construtos
+  })
+  
   #retorna tabela de indicadores evasao
   output$indicadoresEvasao <- renderDataTable({
     listaVariaveis <- data.frame(dicionarioBaseEvasao[,c("INDICADOR","CONSTRUTOS")])
     colnames(listaVariaveis) <- c("Indicador","Construto")
+    
+    construtosCheckBox <- INcheckboxesEvasao()
+    
+    if(!is.null(construtosCheckBox)) {
+      filtroVariaveis <- c()
+      for(i in construtosCheckBox) {
+        filtroVariaveis <- c(filtroVariaveis, DFconstrutosEvasao[i,]$Varinicial:DFconstrutosEvasao[i,]$Varfinal)
+      }
+    } else {
+      filtroVariaveis <- c(1:nrow(listaVariaveis))
+    }
+    
     DT::datatable(
-      listaVariaveis,options = list(
+      listaVariaveis[filtroVariaveis,],
+      options = list(
         paging = FALSE,
         searching = FALSE,
-        nfo = FALSE, 
+        info = FALSE, 
         scrollY = '300px'
       )
     )
@@ -399,6 +477,64 @@ shinyServer(function(input, output) {
     valueBox(
       paste0(altoRisco, "%"), "Alto Risco", icon = icon("thumbs-down", lib = "glyphicon"),
       color = "red"
+    )
+  })
+  
+  #Gráfico de evasão
+  
+  output$graficoEvasao <- renderChart2({
+    indSelecionados <- input$indicadoresEvasao_rows_selected
+    
+    if(is.null(indSelecionados)) {
+      construtosCheckBox <- INcheckboxesEvasao()
+      if(!is.null(construtosCheckBox)) {
+        indSelecionados <- c()
+        for(i in construtosCheckBox) {
+          indSelecionados <- c(indSelecionados, DFconstrutosEvasao[i,]$Varinicial:DFconstrutosEvasao[i,]$Varfinal)
+        }
+      } else {
+        indSelecionados <- c(1:nrow(dicionarioBaseEvasao))
+      }
+    }
+    
+    indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseEvasao))
+    g <- nPlot(Média ~ Indicador, data = dadosEvasao[indSelecionados,], group = "RiscoEvasao", type = 'multiBarHorizontalChart', width = 600)
+  })
+  
+  #Checkboxes p/ construtos de evasão
+  
+  output$construtosEvasao <- renderUI({
+    colunas <- list()
+    colunas[[1]] <- list()
+    colunas[[2]] <- list()
+    colunas[[3]] <- list()
+    totalconstrutos <- nrow(DFconstrutosEvasao)
+    construtosporcol <- round(totalconstrutos / 3, 0)
+    
+    colat <- 1
+    nsel <- 1
+    for(i in 1:nrow(DFconstrutosEvasao)) {
+      colunas[[colat]][[nsel]] <- checkboxInput(paste("constevas_", i, sep = ""), DFconstrutosEvasao[i,]$Construto, FALSE)
+      nsel <- nsel + 1
+      if(nsel > construtosporcol) {
+        colat <- colat + 1
+        nsel <- 1
+      }
+    }
+    
+    fluidRow(
+      column(
+        width=4,
+        colunas[[1]]
+      ),
+      column(
+        width=4,
+        colunas[[2]]
+      ),
+      column(
+        width=4,
+        colunas[[3]]
+      )
     )
   })
   
