@@ -325,7 +325,12 @@ shinyServer(function(input, output) {
     desempenhoSatisfatorio <- 0
     if(!is.null(input$aplicacao) && input$aplicacao == 2) {
       classesSat <- table(baseFiltrada()$DESEMPENHO_BINARIO)
-      desempenhoSatisfatorio <-round((classesSat[1] / nrow(baseFiltrada())) * 100, 2)
+      Sat <- if (!is.na(classesSat["0"])) classesSat["0"] else 0
+      
+      desempenhoSatisfatorio <-round((Sat / nrow(baseFiltrada())) * 100, 2)
+      if(is.na(desempenhoSatisfatorio)) {
+        desempenhoSatisfatorio <- 0
+      }
     }
     valueBox(
       paste0(desempenhoSatisfatorio, "%"), "Satisfatório", icon = icon("thumbs-up", lib = "glyphicon"),
@@ -338,7 +343,12 @@ shinyServer(function(input, output) {
     desempenhoInsatisfatorio <- 0
     if(!is.null(input$aplicacao) && input$aplicacao == 2) {
       classesSat <- table(baseFiltrada()$DESEMPENHO_BINARIO)
-      desempenhoInsatisfatorio <-round((classesSat[2] / nrow(baseFiltrada())) * 100, 2)
+      Insat <- if (!is.na(classesSat["1"])) classesSat["1"] else 0
+      
+      desempenhoInsatisfatorio <-round((Insat / nrow(baseFiltrada())) * 100, 2)
+      if(is.na(desempenhoInsatisfatorio)) {
+        desempenhoInsatisfatorio <- 0
+      }
     }
     valueBox(
       paste0(desempenhoInsatisfatorio, "%"), "Insatisfatório", icon = icon("thumbs-down", lib = "glyphicon"),
@@ -469,7 +479,12 @@ shinyServer(function(input, output) {
     baixoRisco <- 0 
     if(!is.null(input$aplicacao) && input$aplicacao == 3) {
       classesEvas <- table(baseFiltrada()$EVASAO)
-      baixoRisco <- round((classesEvas[1] / nrow(baseFiltrada())) * 100, 2)
+      Baixo <- if (!is.na(classesEvas["0"])) classesEvas["0"] else 0
+      
+      baixoRisco <- round((Baixo / nrow(baseFiltrada())) * 100, 2)
+      if(is.na(baixoRisco)) {
+        baixoRisco <- 0
+      }
     }
     valueBox(
       paste0(baixoRisco, "%"), "Baixo Risco", icon = icon("thumbs-up", lib = "glyphicon"),
@@ -482,7 +497,12 @@ shinyServer(function(input, output) {
     altoRisco <- 0
     if(!is.null(input$aplicacao) && input$aplicacao == 3) {
       classesEvas <- table(baseFiltrada()$EVASAO)
-      altoRisco <- round((classesEvas[2] / nrow(baseFiltrada())) * 100, 2)
+      Alto <- if (!is.na(classesEvas["1"])) classesEvas["1"] else 0
+      
+      altoRisco <- round((Alto / nrow(baseFiltrada())) * 100, 2)
+      if(is.na(altoRisco)) {
+        altoRisco <- 0
+      }
     }
     valueBox(
       paste0(altoRisco, "%"), "Alto Risco", icon = icon("thumbs-down", lib = "glyphicon"),
