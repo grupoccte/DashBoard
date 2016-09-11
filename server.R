@@ -77,6 +77,14 @@ dadosDesempenho <- data.frame(
   )
 )
 
+#Complemento dos construtos de desempenho (variáveis que não estão associadas a nenhum construto no dataframe após leitura do dicionário)
+
+Construtos <- c()
+for(i in 1:nrow(DFconstrutosDesempenho)) {
+  Construtos <- c(Construtos, rep(as.character(DFconstrutosDesempenho[i,]$Construto), (DFconstrutosDesempenho[i,]$Varfinal + 1) - DFconstrutosDesempenho[i,]$Varinicial))
+}
+dicionarioBaseDesempenho$Construto <- Construtos
+
 #Tratamento de dados para plotagem de gráfico de evasão
 colVariaveisBaixoRisco <- select(filter(baseEvasao, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
 colVariaveisAltoRisco <- select(filter(baseEvasao, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
