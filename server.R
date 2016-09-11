@@ -187,7 +187,7 @@ shinyServer(function(input, output) {
     } else {
       disciplinas <- NULL
     }
-    selectInput("disciplina","Escolha a Disciplina:",as.character(unique(disciplinas$Disciplina)))
+    selectInput("disciplina","Escolha a Disciplina:", sort(as.character(unique(disciplinas$Disciplina))))
   })
   
   
@@ -302,6 +302,8 @@ shinyServer(function(input, output) {
       listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
       listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório";
       colnames(listaAlunosDese) <- c("Nome", "Desempenho")
+      listaAlunosDese <- listaAlunosDese[with(listaAlunosDese, order(Nome)), ]
+      rownames(listaAlunosDese) <- NULL
     } else {
       listaAlunosDese <- NULL
     }
