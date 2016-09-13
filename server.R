@@ -85,6 +85,24 @@ for(i in 1:nrow(DFconstrutosDesempenho)) {
 }
 dicionarioBaseDesempenho$Construto <- Construtos
 
+#Calculo de correção para construtos de desempenho não selecionados
+
+calcConstrutosDesempenho <- function(linhas, construtos) {
+  if(!is.null(construtos)) {
+    totaldiff <- 0
+    diff <- c()
+    ultimoanterior <- 0
+    for(i in construtos) {
+      totaldiff <- totaldiff + (DFconstrutosDesempenho[i,]$Varinicial - ultimoanterior - 1)
+      ultimoanterior <- DFconstrutosDesempenho[i,]$Varfinal
+      diff <- c(diff, rep(totaldiff, each = (DFconstrutosDesempenho[i,]$Varfinal - DFconstrutosDesempenho[i,]$Varinicial + 1)))
+    }
+    return(diff[linhas])
+  } else {
+    return(0)
+  }
+}
+
 #Tratamento de dados para plotagem de gráfico de evasão
 colVariaveisBaixoRisco <- select(filter(baseEvasao, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
 colVariaveisAltoRisco <- select(filter(baseEvasao, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
@@ -133,6 +151,25 @@ for(i in 1:nrow(dicionarioBaseEvasao)) {
 Varfinal <- c(Varfinal, nrow(dicionarioBaseEvasao))
 
 DFconstrutosEvasao <- data.frame(Construto, Varinicial, Varfinal)
+
+#Calculo de correção para construtos de evasão não selecionados
+
+calcConstrutosEvasao <- function(linhas, construtos) {
+  if(!is.null(construtos)) {
+    totaldiff <- 0
+    diff <- c()
+    ultimoanterior <- 0
+    for(i in construtos) {
+      totaldiff <- totaldiff + (DFconstrutosEvasao[i,]$Varinicial - ultimoanterior - 1)
+      ultimoanterior <- DFconstrutosEvasao[i,]$Varfinal
+      diff <- c(diff, rep(totaldiff, each = (DFconstrutosEvasao[i,]$Varfinal - DFconstrutosEvasao[i,]$Varinicial + 1)))
+    }
+    return(diff[linhas])
+  } else {
+    return(0)
+  }
+}
+
 
 shinyServer(function(input, output) {
   #Radio da aplicação
@@ -358,6 +395,11 @@ shinyServer(function(input, output) {
   
   output$graficoDesempenho <- renderChart2({
     indSelecionados <- input$indicadoresDesempenho_rows_selected
+    
+    if(!is.null(indSelecionados)) {
+      indSelecionados <- indSelecionados + calcConstrutosDesempenho(indSelecionados, INcheckboxesDesempenho())
+    }
+    
     if(is.null(indSelecionados)) {
       construtosCheckBox <- INcheckboxesDesempenho()
       if(!is.null(construtosCheckBox)) {
@@ -517,6 +559,10 @@ shinyServer(function(input, output) {
   
   output$graficoEvasao <- renderChart2({
     indSelecionados <- input$indicadoresEvasao_rows_selected
+    
+    if(!is.null(indSelecionados)) {
+      indSelecionados <- indSelecionados + calcConstrutosEvasao(indSelecionados, INcheckboxesEvasao())
+    }
     
     if(is.null(indSelecionados)) {
       construtosCheckBox <- INcheckboxesEvasao()
