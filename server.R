@@ -370,7 +370,10 @@ shinyServer(function(input, output) {
       }
     }
     indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseDesempenho))
-    nPlot(Média ~ Indicador, data = dadosDesempenho[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
+    indSelecionados <- sort(indSelecionados)
+    g <- nPlot(Média ~ Indicador, data = dadosDesempenho[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
+    g$chart(color = c('green', 'red'))
+    g
   })
   
   #Checkboxes p/ construtos de desempenho
@@ -528,7 +531,10 @@ shinyServer(function(input, output) {
     }
     
     indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseEvasao))
+    indSelecionados <- sort(indSelecionados)
     g <- nPlot(Média ~ Indicador, data = dadosEvasao[indSelecionados,], group = "RiscoEvasao", type = 'multiBarHorizontalChart', width = 600)
+    g$chart(color = c('red', 'green'))
+    g
   })
   
   #Checkboxes p/ construtos de evasão

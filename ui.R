@@ -4,6 +4,8 @@ library(DT)
 library(dplyr)
 require(devtools)
 require(rCharts)
+require(reshape2)
+require(scales)
 
 dashboardPage(
   dashboardHeader(title = "Dashboard"),
