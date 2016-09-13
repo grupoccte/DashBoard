@@ -15,6 +15,7 @@ dicionarioBaseEvasao <- dicionarioBaseEvasao[with(dicionarioBaseEvasao, order(CO
 rownames(dicionarioBaseEvasao) <- NULL #Correção para o número das linhas após ordenação
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv", encoding = "UTF-8")
+listaVariaveisGeral <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
 
 #::Calculo de médias, máximos e mínimos para análise geral
 
@@ -249,15 +250,28 @@ shinyServer(function(input, output) {
   output$indicadoresGeral <- renderDataTable({
     listaVariaveis <- data.frame(dicionarioBaseDesempenho$Descrição.sobre.as.variáveis)
     colnames(listaVariaveis) <- c("Indicador")
-    DT::datatable(
-      listaVariaveis,
-      options = list(
-        paging = FALSE,
-        searching = FALSE,
-        info = FALSE,
-        scrollY = '300px'
+    if(input$tabGeral == "1"){
+      DT::datatable(
+        listaVariaveis,
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'
+        )
       )
-    )
+    }else{
+      DT::datatable(
+        listaVariaveis,
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'
+        ),
+        selection = list(target = 'row',mode="single",selected=c(1))
+      )
+    }
   })
   
   #retorna tabela alunos gerais
@@ -268,15 +282,35 @@ shinyServer(function(input, output) {
     } else {
       listaAlunos <- NULL
     }
-    DT::datatable(
-      listaAlunos, 
-      options = list(
-        paging = FALSE,
-        searching = FALSE,
-        info = FALSE,
-        scrollY = '300px'
+    if(input$tabGeral == "1"){
+      DT::datatable(
+        listaAlunos, 
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'
+        )
       )
-    )
+    }else{
+      variaveis <- as.character(listaVariaveisGeral$Variável)
+      varSelected <- variaveis[input$indicadoresGeral_rows_selected]
+      if(length(varSelected) == 0){
+        listaAlunos <- NULL
+      }else{
+        listaAlunos <- baseFiltrada()[,c("Aluno",varSelected)]
+        colnames(listaAlunos) <- c("Nome","Valor")
+      }
+      DT::datatable(
+        listaAlunos, 
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'
+        )
+      )
+    }
   })
   
   output$graficoGeral <- renderChart2({
@@ -320,16 +354,29 @@ shinyServer(function(input, output) {
       filtroVariaveis <- c(1:nrow(listaVariaveis))
     }
     
-    DT::datatable(
-      listaVariaveis[filtroVariaveis,],
-      options = list(
-        paging = FALSE,
-        searching = FALSE,
-        info = FALSE, scrollY = '300px',
-        scrollX = '300px'),
-      class = "compact",
-      selection = list(target = 'row', mode="multiple")
-    )
+    if(input$tabDesempenho == "1"){
+      DT::datatable(
+        listaVariaveis[filtroVariaveis,],
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE, scrollY = '300px',
+          scrollX = '300px'),
+        class = "compact",
+        selection = list(target = 'row', mode="multiple")
+      ) 
+    }else{
+      DT::datatable(
+        listaVariaveis[filtroVariaveis,],
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE, scrollY = '300px',
+          scrollX = '300px'),
+        class = "compact",
+        selection = list(target = 'row', mode="single",selected=c(1))
+      )
+    }
   })
   
   #retorna tabela alunos Desempenho
@@ -344,15 +391,37 @@ shinyServer(function(input, output) {
     } else {
       listaAlunosDese <- NULL
     }
-    DT::datatable(
-      listaAlunosDese,
-      options = list(
-        paging = FALSE,
-        searching = FALSE,
-        info = FALSE,
-        scrollY = '300px'),
-      class = "compact"
-    )
+    if(input$tabDesempenho == "1"){
+      DT::datatable(
+        listaAlunosDese,
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'),
+        class = "compact"
+      ) 
+    }else{
+      variaveis <- as.character(listaVariaveisGeral$Variável)
+      varSelected <- variaveis[input$indicadoresDesempenho_rows_selected]
+      if(length(varSelected) == 0){
+        listaAlunosDese <- NULL
+      }else{
+        listaAlunosDese <- baseFiltrada()[,c("Nome.do.Aluno",varSelected,"DESEMPENHO_BINARIO")]
+        listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
+        listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório"
+        colnames(listaAlunosDese) <- c("Nome","Valor","Desempenho")
+      }
+      DT::datatable(
+        listaAlunosDese,
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'),
+        class = "compact"
+      )
+    }
   })
   
   #infoBoxes de desempenho
