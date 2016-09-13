@@ -25,11 +25,11 @@ dashboardPage(
                        column(
                          width=8,
                          tabBox(
-                           side = "left", width = 12,
-                           selected = "Geral",
-                           tabPanel("Geral", showOutput("graficoGeral", "nvd3")),
-                           tabPanel("Indicadores", ""),
-                           tabPanel("Alunos", "")
+                           id = "tabGeral",side = "left", width = 12,
+                           selected = "1",
+                           tabPanel("Geral",value = "1" ,showOutput("graficoGeral", "nvd3")),
+                           tabPanel("Indicadores",value = "2", ""),
+                           tabPanel("Alunos",value = "3", "")
                          )
                        ),
                        column(
