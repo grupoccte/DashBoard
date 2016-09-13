@@ -14,7 +14,7 @@ dicionarioBaseEvasao <- read.csv(file = "data/BaseEvasão/dicionario_dadosEvasao
 dicionarioBaseEvasao <- dicionarioBaseEvasao[with(dicionarioBaseEvasao, order(CONSTRUTOS)), ] #ordenação pela coluna de construto para facilitar os checkboxes dinâmicos sem repetição
 rownames(dicionarioBaseEvasao) <- NULL #Correção para o número das linhas após ordenação
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
-dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv")
+dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv", encoding = "UTF-8")
 
 #::Calculo de médias, máximos e mínimos para análise geral
 
