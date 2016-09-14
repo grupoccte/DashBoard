@@ -83,14 +83,14 @@ dashboardPage(
                          valueBoxOutput("AltoRiscoBox", width = 6),
                          valueBoxOutput("BaixoRiscoBox",width = 6),
                          tabBox(
-                           side = "left", width = 12,
-                           selected = "Geral",
-                           tabPanel("Geral",
+                           id="tabEvasao",side = "left", width = 12,
+                           selected = "1",
+                           tabPanel("Geral",value = "1",
                                     showOutput("graficoEvasao", "nvd3"),
                                     uiOutput("construtosEvasao")
                            ),
-                           tabPanel("Indicadores", ""),
-                           tabPanel("Alunos", "")
+                           tabPanel("Indicadores",value = "2" ,""),
+                           tabPanel("Alunos",value = "3" ,"")
                          )
                        ),
                        column(
