@@ -16,7 +16,7 @@ rownames(dicionarioBaseEvasao) <- NULL #Correção para o número das linhas ap�
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv", encoding = "UTF-8")
 listaVariaveisGeral <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
-
+listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
 #::Calculo de médias, máximos e mínimos para análise geral
 
 colVariaveis <- select(baseGeral, one_of(as.character(dicionarioBaseDesempenho$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
@@ -554,15 +554,30 @@ shinyServer(function(input, output) {
       filtroVariaveis <- c(1:nrow(listaVariaveis))
     }
     
-    DT::datatable(
-      listaVariaveis[filtroVariaveis,],
-      options = list(
-        paging = FALSE,
-        searching = FALSE,
-        info = FALSE, 
-        scrollY = '300px'
+    if(input$tabEvasao == "1"){
+      DT::datatable(
+        listaVariaveis[filtroVariaveis,],
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE, 
+          scrollY = '300px'
+        )
+      )  
+    }else{
+      DT::datatable(
+        listaVariaveis[filtroVariaveis,],
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE, 
+          scrollY = '300px'
+        ),
+        selection = list(target = 'row', mode="single",selected=c(1))
       )
-    )
+    }
+    
+    
   })
   
   #retorna tabela de alunos evasao
@@ -575,15 +590,37 @@ shinyServer(function(input, output) {
     } else {
       listaAlunosEvasao <- NULL
     }
-    DT::datatable(
-      listaAlunosEvasao,
-      options = list(
-        paging = FALSE,
-        searching = FALSE,
-        info = FALSE,
-        scrollY = '300px'),
-      class = "compact"
-    )
+    if(input$tabEvasao == "1"){
+      DT::datatable(
+        listaAlunosEvasao,
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'),
+        class = "compact"
+      )
+    }else{
+      variaveis <- as.character(listaVariaveisEvasao$ID)
+      varSelected <- variaveis[input$indicadoresEvasao_rows_selected]
+      if(length(varSelected) == 0){
+        listaAlunosEvasao <- NULL
+      }else{
+        listaAlunosEvasao <- baseFiltrada()[,c("Aluno",varSelected,"EVASAO")]
+        listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 0] <- "Baixo"
+        listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 1] <- "Alto"
+        colnames(listaAlunosEvasao) <- c("Nome","Valor","Risco")
+      }
+      DT::datatable(
+        listaAlunosEvasao,
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'),
+        class = "compact"
+      )
+    }
   })
   
   #infoBoxes de evasão
