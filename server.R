@@ -292,15 +292,15 @@ shinyServer(function(input, output) {
           scrollY = '300px'
         )
       )
-    }else{
+    } else{
       variaveis <- as.character(listaVariaveisGeral$Variável)
       varSelected <- variaveis[input$indicadoresGeral_rows_selected]
-      if(length(varSelected) == 0){
+      if(length(varSelected) == 0) {
         listaAlunos <- NULL
-      }else{
+      } else{
         listaAlunos <- baseFiltrada()[,c("Aluno",varSelected)]
         colnames(listaAlunos) <- c("Nome","Valor")
-      }
+    }
       DT::datatable(
         listaAlunos, 
         options = list(
@@ -318,6 +318,7 @@ shinyServer(function(input, output) {
     if(is.null(indSelecionados)) {
       indSelecionados <- c(1:nrow(dicionarioBaseDesempenho))
     }
+    indSelecionados <- sort(indSelecionados)
     g <- nPlot(Média ~ Indicador, data = visGeralIndicadores[indSelecionados,], type = 'multiBarHorizontalChart', width = 600)
     g$chart(showControls = F)
     g
