@@ -20,6 +20,7 @@ dashboardPage(
     ),
   dashboardBody(
     #Visao Geral
+    tags$head(tags$script(src="tracking.js")),
     conditionalPanel("input.aplicacao == 1",
                      fluidRow(
                        column(
