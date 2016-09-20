@@ -436,7 +436,6 @@ shinyServer(function(input, output) {
         rownames = FALSE,
         options = list(
           paging = FALSE,
-          searching = FALSE,
           info = FALSE,
           scrollY = '300px'),
         class = "compact"
@@ -451,13 +450,13 @@ shinyServer(function(input, output) {
         listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
         listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório"
         colnames(listaAlunosDese) <- c("Nome","Valor","Desempenho")
+        listaAlunosDese <- listaAlunosDese[with(listaAlunosDese, order(Nome)), ]
       }
       DT::datatable(
         listaAlunosDese,
         rownames = FALSE,
         options = list(
           paging = FALSE,
-          searching = FALSE,
           info = FALSE,
           scrollY = '300px'),
         class = "compact"
