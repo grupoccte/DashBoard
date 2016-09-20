@@ -20,13 +20,19 @@ listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGera
 listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
 #::Calculo de médias, máximos e mínimos para análise geral
 
-colVariaveis <- select(baseGeral, one_of(as.character(listaVariaveisGeral$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
-visGeralIndicadores <- data.frame(
-  Indicador = c(1:ncol(colVariaveis)),
-  Min = sapply(colVariaveis, min), 
-  Média = colMeans(colVariaveis),
-  Max = sapply(colVariaveis, max)
-) 
+visGeralIndicadores <- function(base) {
+  if(!is.null(base)) {
+    colVariaveis <- select(base, one_of(as.character(listaVariaveisGeral$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
+    data.frame(
+      Indicador = c(1:ncol(colVariaveis)),
+      Min = sapply(colVariaveis, min), 
+      Média = colMeans(colVariaveis),
+      Max = sapply(colVariaveis, max)
+    )
+  } else {
+    NULL
+  }
+}
 
 #::Dados p/ análise de desempenho
 
@@ -53,31 +59,77 @@ Varfinal <- c(Varfinal, nrow(dicionarioBaseDesempenho))
 DFconstrutosDesempenho <- data.frame(Construto, Varinicial, Varfinal)
 
 #Tratamento de dados para plotagem de gráfico de desempenho
-colVariaveisSat <- select(filter(baseDesempenho, DESEMPENHO_BINARIO == "0"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
-colVariaveisInsat <- select(filter(baseDesempenho, DESEMPENHO_BINARIO == "1"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
 
-dadosDesempenho <- data.frame(
-  Indicador = c(
-    c(1:ncol(colVariaveisSat)), 
-    c(1:ncol(colVariaveisSat))
-  ),
-  Min = c(
-    Min = sapply(colVariaveisSat, min),
-    Min = sapply(colVariaveisInsat, min)
-  ),
-  Média = c(
-    colMeans(colVariaveisSat),
-    colMeans(colVariaveisInsat)
-  ),
-  Max = c(
-    sapply(colVariaveisSat, max),
-    sapply(colVariaveisInsat, max)
-  ),
-  Desempenho = c(
-    rep("Satisfatório", each = ncol(colVariaveisSat)),
-    rep("Insatisfatório", each = ncol(colVariaveisInsat))
-  )
-)
+dadosDesempenho <- function(base) {
+  if(!is.null(base)) {
+    colVariaveisSat <- select(filter(base, DESEMPENHO_BINARIO == "0"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
+    colVariaveisInsat <- select(filter(base, DESEMPENHO_BINARIO == "1"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
+    
+    #MIN
+    if(nrow(colVariaveisSat) != 0) {
+      minSat <- sapply(colVariaveisSat, min)
+    } else {
+      minSat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    if(nrow(colVariaveisInsat) != 0) {
+      minInsat <- sapply(colVariaveisInsat, min)
+    } else {
+      minInsat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    #MÉDIA
+    if(nrow(colVariaveisSat) != 0) {
+      mediaSat <- colMeans(colVariaveisSat)
+    } else {
+      mediaSat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    if(nrow(colVariaveisInsat) != 0) {
+      mediaInsat <- colMeans(colVariaveisInsat)
+    } else {
+      mediaInsat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    #MAX
+    if(nrow(colVariaveisSat) != 0) {
+      maxSat <- sapply(colVariaveisSat, max)
+    } else {
+      maxSat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    if(nrow(colVariaveisInsat) != 0) {
+      maxInsat <- sapply(colVariaveisInsat, max)
+    } else {
+      maxInsat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    data.frame(
+      Indicador = c(
+        c(1:ncol(colVariaveisSat)), 
+        c(1:ncol(colVariaveisSat))
+      ),
+      Min = c(
+        minSat,
+        minInsat
+      ),
+      Média = c(
+        mediaSat,
+        mediaInsat
+      ),
+      Max = c(
+        maxSat,
+        maxInsat
+      ),
+      Desempenho = c(
+        rep("Satisfatório", each = ncol(colVariaveisSat)),
+        rep("Insatisfatório", each = ncol(colVariaveisInsat))
+      )
+    )
+  } else {
+    NULL
+  }
+}
 
 #Complemento dos construtos de desempenho (variáveis que não estão associadas a nenhum construto no dataframe após leitura do dicionário)
 
@@ -233,7 +285,7 @@ shinyServer(function(input, output) {
   
   ##Base de acordo com os parametros escolhidos e de acordo com a base de dados
   baseFiltrada <- reactive({
-    if(!is.null(input$aplicacao)) {
+    if(!is.null(input$aplicacao) && !is.null(input$curso) && input$curso != "" && !is.null(input$periodo) && input$periodo != "" && !is.null(input$disciplina) && input$disciplina != "") {
       if(input$aplicacao == 1){
         filter(baseGeral, Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
       }else if(input$aplicacao == 2){
@@ -323,14 +375,21 @@ shinyServer(function(input, output) {
       indSelecionados <- c(1:nrow(listaVariaveisGeral))
     }
     indSelecionados <- sort(indSelecionados)
-    g <- nPlot(Média ~ Indicador, data = visGeralIndicadores[indSelecionados,], type = 'multiBarHorizontalChart', width = 600)
-    g$chart(showControls = F);
-    g
+    base <- visGeralIndicadores(baseFiltrada())
+    if(!is.null(base) && input$aplicacao == 1) {
+      g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], title = "Média dos indicadores geral", type = 'multiBarHorizontalChart', width = 600)
+      g$chart(showControls = F)
+      g
+    } else {
+      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 1)
+    }
   })
   
   #Gráfico "indicadores" da visão geral dos dados
   
   output$graficoGeralIndicadores <- renderChart2({
+    base <- visGeralIndicadores(baseFiltrada())
+    
     indicador <- input$indicadoresGeral_rows_selected
     if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
       listaAlunos <- select(baseFiltrada(), Aluno, one_of(as.character(listaVariaveisGeral[indicador,]$Variável)))
@@ -338,9 +397,9 @@ shinyServer(function(input, output) {
       listaAlunos["Aluno"] <- c(1:nrow(baseFiltrada()))
       names(listaAlunos$Nome) <- rep("nome", each = nrow(listaAlunos))
       
-      min <- visGeralIndicadores[indicador,]$Min
-      media <- round(visGeralIndicadores[indicador,]$Média, 1)
-      max <- visGeralIndicadores[indicador,]$Max
+      min <- base[indicador,]$Min
+      media <- round(base[indicador,]$Média, 1)
+      max <- base[indicador,]$Max
       hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y + '<br />Min: ", min, "<br />Média: ", media, "<br />Max: ", max, "';}!#", sep = "")
       
       descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
@@ -512,9 +571,18 @@ shinyServer(function(input, output) {
     }
     indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseDesempenho))
     indSelecionados <- sort(indSelecionados)
-    g <- nPlot(Média ~ Indicador, data = dadosDesempenho[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
-    g$chart(color = c('green', 'red'))
-    g
+    if(input$aplicacao == 2) {
+      base <- dadosDesempenho(baseFiltrada())
+    } else {
+      base <- NULL
+    }
+    if(!is.null(base)) {
+      g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
+      g$chart(color = c('green', 'red'))
+      g
+    } else {
+      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 1)
+    }
   })
   
   #Checkboxes p/ construtos de desempenho
