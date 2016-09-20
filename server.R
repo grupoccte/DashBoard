@@ -22,7 +22,7 @@ listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
 
 colVariaveis <- select(baseGeral, one_of(as.character(listaVariaveisGeral$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
 visGeralIndicadores <- data.frame(
-  Indicador = paste("Ind", c(1:ncol(colVariaveis))),
+  Indicador = c(1:ncol(colVariaveis)),
   Min = sapply(colVariaveis, min), 
   Média = colMeans(colVariaveis),
   Max = sapply(colVariaveis, max)
@@ -58,8 +58,8 @@ colVariaveisInsat <- select(filter(baseDesempenho, DESEMPENHO_BINARIO == "1"), o
 
 dadosDesempenho <- data.frame(
   Indicador = c(
-    paste("Ind", c(1:ncol(colVariaveisSat))), 
-    paste("Ind", c(1:ncol(colVariaveisSat)))
+    c(1:ncol(colVariaveisSat)), 
+    c(1:ncol(colVariaveisSat))
   ),
   Min = c(
     Min = sapply(colVariaveisSat, min),
@@ -111,8 +111,8 @@ colVariaveisAltoRisco <- select(filter(baseEvasao, EVASAO == "1"), one_of(as.cha
 
 dadosEvasao <- data.frame(
   Indicador = c(
-    paste("Ind", c(1:ncol(colVariaveisBaixoRisco))), 
-    paste("Ind", c(1:ncol(colVariaveisBaixoRisco)))
+    c(1:ncol(colVariaveisBaixoRisco)), 
+    c(1:ncol(colVariaveisBaixoRisco))
   ),
   Min = c(
     Min = sapply(colVariaveisAltoRisco, min),
