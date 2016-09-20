@@ -7,7 +7,7 @@ require(rCharts)
 
 
 #Leitura base de dados gerais
-baseGeral <- read.csv2(file = "data/BaseGeral/base_desempenho.csv", encoding = "UTF-8")
+baseGeral <- read.csv2(file = "data/BaseGeral/base_geral.csv", encoding = "latin1")
 #Leitura base de dados evasao
 baseEvasao <- read.csv2(file = "data/BaseEvasão/base_evasao.csv", encoding = "latin1")
 dicionarioBaseEvasao <- read.csv(file = "data/BaseEvasão/dicionario_dadosEvasao.csv", encoding = "UTF-8")#Leitura base de dados desempenho
@@ -15,11 +15,12 @@ dicionarioBaseEvasao <- dicionarioBaseEvasao[with(dicionarioBaseEvasao, order(CO
 rownames(dicionarioBaseEvasao) <- NULL #Correção para o número das linhas após ordenação
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv", encoding = "UTF-8")
-listaVariaveisGeral <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
+#listaVariaveisGeral <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
+listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGeral.csv", encoding = "UTF-8")
 listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
 #::Calculo de médias, máximos e mínimos para análise geral
 
-colVariaveis <- select(baseGeral, one_of(as.character(dicionarioBaseDesempenho$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
+colVariaveis <- select(baseGeral, one_of(as.character(listaVariaveisGeral$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
 visGeralIndicadores <- data.frame(
   Indicador = paste("Ind", c(1:ncol(colVariaveis))),
   Min = sapply(colVariaveis, min), 
@@ -171,21 +172,22 @@ calcConstrutosEvasao <- function(linhas, construtos) {
   }
 }
 
-
 shinyServer(function(input, output) {
   #Radio da aplicação
   output$radioApp <- renderUI({
     radioButtons("aplicacao","Seleciona a aplicação:", 
                  choices =c("Visão geral dos dados" = 1,
                             "Análise de Desempenho" = 2,
-                            "Análise de Evasão" = 3),selected = 1)
+                            "Análise de Evasão" = 3),selected = 1);
   })
   
   #Base em função do radio
   baseInputs <- reactive({
     if(!is.null(input$aplicacao)) {
-      if(input$aplicacao != 3) {
+      if(input$aplicacao == 1) {
         baseGeral
+      } else if(input$aplicacao == 2) {
+        baseDesempenho
       } else {
         baseEvasao
       }
@@ -235,7 +237,7 @@ shinyServer(function(input, output) {
       if(input$aplicacao == 1){
         filter(baseGeral, Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
       }else if(input$aplicacao == 2){
-        filter(baseDesempenho, Curso == input$curso, Periodo == input$periodo, Nome.da.Disciplina == input$disciplina)
+        filter(baseDesempenho, Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
       }else{
         filter(baseEvasao, Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
       }
@@ -248,7 +250,7 @@ shinyServer(function(input, output) {
   
   #retorna tabela indicadores gerais
   output$indicadoresGeral <- renderDataTable({
-    listaVariaveis <- data.frame(dicionarioBaseDesempenho$Descrição.sobre.as.variáveis)
+    listaVariaveis <- data.frame(listaVariaveisGeral$Descrição.sobre.as.variáveis)
     colnames(listaVariaveis) <- c("Indicador")
     if(input$tabGeral == "1"){
       DT::datatable(
@@ -313,15 +315,42 @@ shinyServer(function(input, output) {
     }
   })
   
+  #Gráfico "geral" da visão geral dos dados
+  
   output$graficoGeral <- renderChart2({
     indSelecionados <- input$indicadoresGeral_rows_selected
     if(is.null(indSelecionados)) {
-      indSelecionados <- c(1:nrow(dicionarioBaseDesempenho))
+      indSelecionados <- c(1:nrow(listaVariaveisGeral))
     }
     indSelecionados <- sort(indSelecionados)
     g <- nPlot(Média ~ Indicador, data = visGeralIndicadores[indSelecionados,], type = 'multiBarHorizontalChart', width = 600)
-    g$chart(showControls = F)
+    g$chart(showControls = F);
     g
+  })
+  
+  #Gráfico "indicadores" da visão geral dos dados
+  
+  output$graficoGeralIndicadores <- renderChart2({
+    indicador <- input$indicadoresGeral_rows_selected
+    if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
+      listaAlunos <- select(baseFiltrada(), Aluno, one_of(as.character(listaVariaveisGeral[indicador,]$Variável)))
+      colnames(listaAlunos) <- c("Nome", "Valor")
+      listaAlunos["Aluno"] <- c(1:nrow(baseFiltrada()))
+      names(listaAlunos$Nome) <- rep("nome", each = nrow(listaAlunos))
+      
+      min <- visGeralIndicadores[indicador,]$Min
+      media <- round(visGeralIndicadores[indicador,]$Média, 1)
+      max <- visGeralIndicadores[indicador,]$Max
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y + '<br />Min: ", min, "<br />Média: ", media, "<br />Max: ", max, "';}!#", sep = "")
+      
+      descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
+      h <- hPlot(Valor ~ Aluno, data = listaAlunos, type = "bubble", title = descricao, size = 1)
+      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
+      h$chart(zoomType = "xy");
+      h
+    } else {
+      hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
+    }
   })
   
   #Analise de desempenho
@@ -383,7 +412,7 @@ shinyServer(function(input, output) {
   #retorna tabela alunos Desempenho
   output$alunosDesempenho <- renderDataTable({
     if(!is.null(input$aplicacao) && input$aplicacao == 2) {
-      listaAlunosDese <- data.frame(baseFiltrada()[,c("Nome.do.Aluno","DESEMPENHO_BINARIO")])
+      listaAlunosDese <- data.frame(baseFiltrada()[,c("Aluno","DESEMPENHO_BINARIO")])
       listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
       listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório";
       colnames(listaAlunosDese) <- c("Nome", "Desempenho")
@@ -403,12 +432,12 @@ shinyServer(function(input, output) {
         class = "compact"
       ) 
     }else{
-      variaveis <- as.character(listaVariaveisGeral$Variável)
+      variaveis <- as.character(dicionarioBaseDesempenho$Variável)
       varSelected <- variaveis[input$indicadoresDesempenho_rows_selected]
       if(length(varSelected) == 0){
         listaAlunosDese <- NULL
       }else{
-        listaAlunosDese <- baseFiltrada()[,c("Nome.do.Aluno",varSelected,"DESEMPENHO_BINARIO")]
+        listaAlunosDese <- baseFiltrada()[,c("Aluno",varSelected,"DESEMPENHO_BINARIO")]
         listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
         listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório"
         colnames(listaAlunosDese) <- c("Nome","Valor","Desempenho")
