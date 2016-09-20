@@ -380,8 +380,8 @@ shinyServer(function(input, output) {
     
     listaVariaveis <- data.frame(dicionarioBaseDesempenho[,c("Descrição.sobre.as.variáveis", "Construto")])
     listaVariaveis["N"] <- c(1:nrow(listaVariaveis))
-    colnames(listaVariaveis) <- c("Indicador", "Construto","Nº")
-    listaVariaveis <- data.frame(listaVariaveis[,c("Nº","Indicador", "Construto")])    
+    colnames(listaVariaveis) <- c("Descrição", "Construto","Nº")
+    listaVariaveis <- data.frame(listaVariaveis[,c("Nº","Descrição", "Construto")])    
     if(!is.null(construtosCheckBox)) {
       filtroVariaveis <- c()
       for(i in construtosCheckBox) {
@@ -563,6 +563,21 @@ shinyServer(function(input, output) {
       )
     )
   })
+  #Grafico "indicadores" da analise de desempenho
+  output$graficoDesempenhoIndicadores <- renderChart2({
+    indicadorDesempenho <- input$indicadoresDesempenho_rows_selected
+    if(!is.null(indicadorDesempenho) && indicadorDesempenho != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
+      listaAlunoDese <- select(baseFiltrada(), Aluno, one_of(as.character(listaVariaveisGeral[indicadorDesempenho,]$Variável)))
+      listaAlunoDese['Aluno'] <- c(1:nrow(baseFiltrada()))
+      colnames(listaAlunos) <- c("Nome", "Valor")
+      descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
+      g <- hPlot(Aluno ~ VAR01, data = listaAlunoDese, type = "bubble", title = descricao,size = "PROBABILIDADE", group = "EVASAO")
+      g$colors('green', 'red')
+    } else {
+      hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
+    }
+  })
+  
   
   #Analise de evasao
   
@@ -582,8 +597,8 @@ shinyServer(function(input, output) {
   output$indicadoresEvasao <- renderDataTable({
     listaVariaveis <- data.frame(dicionarioBaseEvasao[,c("INDICADOR","CONSTRUTOS")])
     listaVariaveis["N"] <- c(1:nrow(listaVariaveis))
-    colnames(listaVariaveis) <- c("Indicador","Construto","Nº")
-    listaVariaveis <- data.frame(listaVariaveis[,c("Nº","Indicador","Construto")])
+    colnames(listaVariaveis) <- c("Descrição","Construto","Nº")
+    listaVariaveis <- data.frame(listaVariaveis[,c("Nº","Descrição","Construto")])
     
     construtosCheckBox <- INcheckboxesEvasao()
     
