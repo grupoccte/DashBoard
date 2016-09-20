@@ -637,9 +637,9 @@ shinyServer(function(input, output) {
     if(input$tabEvasao == "1"){
       DT::datatable(
         listaAlunosEvasao,
+        rownames = FALSE,
         options = list(
           paging = FALSE,
-          searching = FALSE,
           info = FALSE,
           scrollY = '300px'),
         class = "compact"
@@ -657,9 +657,9 @@ shinyServer(function(input, output) {
       }
       DT::datatable(
         listaAlunosEvasao,
+        rownames = FALSE,
         options = list(
           paging = FALSE,
-          searching = FALSE,
           info = FALSE,
           scrollY = '300px'),
         class = "compact"
