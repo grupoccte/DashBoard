@@ -1,0 +1,18 @@
+.coluna {
+	padding-left: 8px;
+	padding-right: 0px;
+}
+.coluna .col-sm-12 {
+	padding-right: 0px;
+}
+.coluna4 {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+.shiny-bound-output: {
+	padding-right: 0px;
+}
+#SatisfatorioBox {padding-right: 0px;}
+#InsatisfatorioBox {padding-right: 0px;}
+#AltoRiscoBox {padding-right: 0px;}
+#BaixoRiscoBox {padding-right: 0px;}

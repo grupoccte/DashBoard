@@ -20,10 +20,14 @@ dashboardPage(
     ),
   dashboardBody(
     #Visao Geral
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "ajustes.css")
+    ),
     tags$head(tags$script(src="tracking.js")),
     conditionalPanel("input.aplicacao == 1",
                      fluidRow(
                        column(
+                         class = "coluna",
                          width=8,
                          tabBox(
                            id = "tabGeral",side = "left", width = 12,
@@ -37,6 +41,7 @@ dashboardPage(
                          )
                        ),
                        column(
+                         class = "coluna4",
                          width = 4,
                          box(
                            width = 12, title = "Indicadores",status = "primary",solidHeader = TRUE ,collapsible = TRUE,
@@ -53,6 +58,7 @@ dashboardPage(
     conditionalPanel("input.aplicacao == 2",
                      fluidRow(
                        column(
+                         class = "coluna",
                          width=8,
                          valueBoxOutput("SatisfatorioBox", width = 6),
                          valueBoxOutput("InsatisfatorioBox",width = 6),
@@ -68,6 +74,7 @@ dashboardPage(
                          )
                        ),
                        column(
+                         class = "coluna4",
                          width = 4,
                          box(
                            width = 12, title = "Indicadores",status = "primary",solidHeader = TRUE ,collapsible = TRUE,
@@ -83,6 +90,7 @@ dashboardPage(
     conditionalPanel("input.aplicacao == 3",
                      fluidRow(
                        column(
+                         class = "coluna",
                          width=8,
                          valueBoxOutput("AltoRiscoBox", width = 6),
                          valueBoxOutput("BaixoRiscoBox",width = 6),
@@ -98,6 +106,7 @@ dashboardPage(
                          )
                        ),
                        column(
+                         class = "coluna4",
                          width = 4,
                          box(
                            width = 12, title = "Indicadores",status = "primary",solidHeader = TRUE ,collapsible = TRUE,
