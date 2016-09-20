@@ -379,8 +379,9 @@ shinyServer(function(input, output) {
     construtosCheckBox <- INcheckboxesDesempenho()
     
     listaVariaveis <- data.frame(dicionarioBaseDesempenho[,c("Descrição.sobre.as.variáveis", "Construto")])
-    colnames(listaVariaveis) <- c("Indicador", "Construto")
-    
+    listaVariaveis["N"] <- c(1:nrow(listaVariaveis))
+    colnames(listaVariaveis) <- c("Indicador", "Construto","Nº")
+    listaVariaveis <- data.frame(listaVariaveis[,c("Nº","Indicador", "Construto")])    
     if(!is.null(construtosCheckBox)) {
       filtroVariaveis <- c()
       for(i in construtosCheckBox) {
@@ -393,6 +394,7 @@ shinyServer(function(input, output) {
     if(input$tabDesempenho == "1"){
       DT::datatable(
         listaVariaveis[filtroVariaveis,],
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
@@ -404,6 +406,7 @@ shinyServer(function(input, output) {
     }else{
       DT::datatable(
         listaVariaveis[filtroVariaveis,],
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
@@ -430,6 +433,7 @@ shinyServer(function(input, output) {
     if(input$tabDesempenho == "1"){
       DT::datatable(
         listaAlunosDese,
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
@@ -450,6 +454,7 @@ shinyServer(function(input, output) {
       }
       DT::datatable(
         listaAlunosDese,
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
