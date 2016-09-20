@@ -581,7 +581,9 @@ shinyServer(function(input, output) {
   #retorna tabela de indicadores evasao
   output$indicadoresEvasao <- renderDataTable({
     listaVariaveis <- data.frame(dicionarioBaseEvasao[,c("INDICADOR","CONSTRUTOS")])
-    colnames(listaVariaveis) <- c("Indicador","Construto")
+    listaVariaveis["N"] <- c(1:nrow(listaVariaveis))
+    colnames(listaVariaveis) <- c("Indicador","Construto","Nº")
+    listaVariaveis <- data.frame(listaVariaveis[,c("Nº","Indicador","Construto")])
     
     construtosCheckBox <- INcheckboxesEvasao()
     
@@ -597,6 +599,7 @@ shinyServer(function(input, output) {
     if(input$tabEvasao == "1"){
       DT::datatable(
         listaVariaveis[filtroVariaveis,],
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
@@ -607,6 +610,7 @@ shinyServer(function(input, output) {
     }else{
       DT::datatable(
         listaVariaveis[filtroVariaveis,],
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
