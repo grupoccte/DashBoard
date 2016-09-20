@@ -251,10 +251,13 @@ shinyServer(function(input, output) {
   #retorna tabela indicadores gerais
   output$indicadoresGeral <- renderDataTable({
     listaVariaveis <- data.frame(listaVariaveisGeral$Descrição.sobre.as.variáveis)
-    colnames(listaVariaveis) <- c("Indicador")
+    listaVariaveis["N"] <- c(1:nrow(listaVariaveis)) 
+    colnames(listaVariaveis) <- c("Descrição","Nº")
+    listaVariaveis <- data.frame(listaVariaveis[,c("Nº", "Descrição")])
     if(input$tabGeral == "1"){
       DT::datatable(
         listaVariaveis,
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
@@ -265,6 +268,7 @@ shinyServer(function(input, output) {
     }else{
       DT::datatable(
         listaVariaveis,
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
@@ -287,6 +291,7 @@ shinyServer(function(input, output) {
     if(input$tabGeral == "1"){
       DT::datatable(
         listaAlunos, 
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
@@ -300,11 +305,12 @@ shinyServer(function(input, output) {
       if(length(varSelected) == 0) {
         listaAlunos <- NULL
       } else{
-        listaAlunos <- baseFiltrada()[,c("Aluno",varSelected)]
+        listaAlunos <- baseFiltrada()[,c("Aluno",varSelected)] 
         colnames(listaAlunos) <- c("Nome","Valor")
     }
       DT::datatable(
         listaAlunos, 
+        rownames = FALSE,
         options = list(
           paging = FALSE,
           searching = FALSE,
