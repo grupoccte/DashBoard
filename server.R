@@ -2,6 +2,8 @@ library(shiny)
 library(shinydashboard)
 library(DT)
 library(dplyr)
+library(plotly)
+library(tidyr)
 require(devtools)
 require(rCharts)
 
@@ -354,7 +356,7 @@ shinyServer(function(input, output) {
     listaVariaveis["N"] <- c(1:nrow(listaVariaveis)) 
     colnames(listaVariaveis) <- c("Descrição","Nº")
     listaVariaveis <- data.frame(listaVariaveis[,c("Nº", "Descrição")])
-    if(input$tabGeral == "1"){
+    if(input$tabGeral == "1" || input$tabGeral == "3" ){
       DT::datatable(
         listaVariaveis,
         rownames = FALSE,
@@ -399,7 +401,19 @@ shinyServer(function(input, output) {
           scrollY = '300px'
         )
       )
-    } else{
+    }else if(input$tabGeral == "3"){
+      DT::datatable(
+        listaAlunos, 
+        rownames = FALSE,
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          scrollY = '300px'
+        ),
+        selection = list(target = 'row',mode="single",selected=c(1))
+      )
+    }else{
       variaveis <- as.character(listaVariaveisGeral$Variável)
       varSelected <- variaveis[input$indicadoresGeral_rows_selected]
       if(length(varSelected) == 0) {
@@ -469,6 +483,31 @@ shinyServer(function(input, output) {
       hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
     }
   })
+  
+  #Grafico "Alunos" da visao geral dos dados
+  output$graficoGeralAlunos <- plotly::renderPlotly({
+    alunos <- sort(as.character(baseFiltrada()$Aluno))
+    alunoSelect <- alunos[input$alunosGeral_rows_selected]
+    aluno <- as.double(select(filter(baseFiltrada(), Aluno == alunoSelect),one_of(as.character(listaVariaveisGeral$Variável))))
+    mediaGeral <- as.double(colMeans(select(baseFiltrada(), one_of(as.character(listaVariaveisGeral$Variável)))))
+    #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
+    dataGeral <- data.frame(listaVariaveisGeral$Variável,aluno,mediaGeral)
+    colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma")
+    g <- gather(dataGeral, var, value, Freq_Aluno, Media_Turma) %>%
+      plot_ly(x = value, y = Var, mode = "markers",
+              color = var, colors = c("pink", "blue")) %>%
+      add_trace(x = value, y = Var, mode = "lines",
+                group = Var, showlegend = F, line = list(color = "gray")) %>%
+      layout(
+        title = paste("Aluno:", alunoSelect),
+        xaxis = list(title = "Frequencia por Indicador"),
+        yaxis = list(title = "Indicador")
+      )
+    g
+    
+    
+  })
+  
   
   #Analise de desempenho
   
