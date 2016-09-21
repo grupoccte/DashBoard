@@ -37,7 +37,9 @@ dashboardPage(
                                     conditionalPanel("input.indicadoresGeral_rows_selected == 0", h5("Nenhum indicador selecionado")),
                                     conditionalPanel("input.indicadoresGeral_rows_selected != 0", showOutput("graficoGeralIndicadores", "highcharts"), tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom"))
                             ),
-                           tabPanel("Alunos",value = "3", "")
+                           tabPanel("Alunos",value = "3", 
+                                    plotly::plotlyOutput('graficoGeralAlunos')
+                                    )
                          )
                        ),
                        column(
@@ -70,7 +72,9 @@ dashboardPage(
                                     uiOutput("construtosDesempenho")
                                     ),
                            tabPanel("Indicadores",value="2" ,""),
-                           tabPanel("Alunos",value="3" ,"")
+                           tabPanel("Alunos",value="3" ,
+                                    plotly::plotlyOutput('graficoDesempenhoAlunos')
+                                    )
                          )
                        ),
                        column(
@@ -102,7 +106,9 @@ dashboardPage(
                                     uiOutput("construtosEvasao")
                            ),
                            tabPanel("Indicadores",value = "2" ,""),
-                           tabPanel("Alunos",value = "3" ,"")
+                           tabPanel("Alunos",value = "3" ,
+                                    plotly::plotlyOutput('graficoEvasaoAlunos')
+                                    )
                          )
                        ),
                        column(
