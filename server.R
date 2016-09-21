@@ -17,7 +17,7 @@ dicionarioBaseEvasao <- dicionarioBaseEvasao[with(dicionarioBaseEvasao, order(CO
 rownames(dicionarioBaseEvasao) <- NULL #Correção para o número das linhas após ordenação
 baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv", encoding = "UTF-8")
-#listaVariaveisGeral <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
+listaVariaveisDesempenho <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
 listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGeral.csv", encoding = "UTF-8")
 listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
 #::Calculo de médias, máximos e mínimos para análise geral
@@ -590,6 +590,28 @@ shinyServer(function(input, output) {
           scrollY = '300px'),
         class = "compact"
       ) 
+    }else if(input$tabDesempenho == "3"){
+      variaveis <- as.character(dicionarioBaseDesempenho$Variável)
+      varSelected <- variaveis[input$indicadoresDesempenho_rows_selected]
+      if(length(varSelected) == 0){
+        listaAlunosDese <- NULL
+      }else{
+        listaAlunosDese <- baseFiltrada()[,c("Aluno",varSelected,"DESEMPENHO_BINARIO")]
+        listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 0] <- "Satisfatório"
+        listaAlunosDese$DESEMPENHO_BINARIO[listaAlunosDese$DESEMPENHO_BINARIO == 1] <- "Insatisfatório"
+        colnames(listaAlunosDese) <- c("Nome","Valor","Desempenho")
+        listaAlunosDese <- listaAlunosDese[with(listaAlunosDese, order(Nome)), ]
+      }
+      DT::datatable(
+        listaAlunosDese,
+        rownames = FALSE,
+        options = list(
+          paging = FALSE,
+          info = FALSE,
+          scrollY = '300px'),
+        class = "compact",
+        selection = list(target = 'row', mode="single",selected=c(1))
+      )
     }else{
       variaveis <- as.character(dicionarioBaseDesempenho$Variável)
       varSelected <- variaveis[input$indicadoresDesempenho_rows_selected]
@@ -735,6 +757,29 @@ shinyServer(function(input, output) {
     } else {
       hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
     }
+  })
+  
+  #Grafico "Alunos" da analise de desempenho
+  output$graficoDesempenhoAlunos <- plotly::renderPlotly({
+    alunos <- sort(as.character(baseFiltrada()$Aluno))
+    alunoSelect <- alunos[input$alunosDesempenho_rows_selected]
+    aluno <- as.double(select(filter(baseFiltrada(), Aluno == alunoSelect),one_of(as.character(listaVariaveisDesempenho$Variável))))
+    mediaSat <- as.double(colMeans(select(filter(baseFiltrada(), DESEMPENHO_BINARIO == "0"),one_of(as.character(listaVariaveisDesempenho$Variável)))))
+    #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
+    dataDesempenho <- data.frame(listaVariaveisDesempenho$Variável,mediaSat,aluno)
+    colnames(dataDesempenho) <- c("Var","Satisfatorio","Freq_Aluno")
+    g <- gather(dataDesempenho, var, value, Freq_Aluno, Satisfatorio) %>%
+      plot_ly(x = value, y = Var, mode = "markers",
+              color = var, colors = c("orange", "green")) %>%
+      add_trace(x = value, y = Var, mode = "lines",
+                group = Var, showlegend = F, line = list(color = "gray")) %>%
+      layout(
+        title = paste("Aluno:", alunoSelect),
+        xaxis = list(title = "Frequencia por Indicador"),
+        yaxis = list(title = "Indicador")
+      )
+    g
+    
   })
   
   
