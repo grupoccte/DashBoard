@@ -106,7 +106,9 @@ dashboardPage(
                                     uiOutput("construtosEvasao")
                            ),
                            tabPanel("Indicadores",value = "2" ,""),
-                           tabPanel("Alunos",value = "3" ,"")
+                           tabPanel("Alunos",value = "3" ,
+                                    plotly::plotlyOutput('graficoEvasaoAlunos')
+                                    )
                          )
                        ),
                        column(
