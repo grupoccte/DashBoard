@@ -161,28 +161,76 @@ calcConstrutosDesempenho <- function(linhas, construtos) {
 colVariaveisBaixoRisco <- select(filter(baseEvasao, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
 colVariaveisAltoRisco <- select(filter(baseEvasao, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
 
-dadosEvasao <- data.frame(
-  Indicador = c(
-    c(1:ncol(colVariaveisBaixoRisco)), 
-    c(1:ncol(colVariaveisBaixoRisco))
-  ),
-  Min = c(
-    Min = sapply(colVariaveisAltoRisco, min),
-    Min = sapply(colVariaveisBaixoRisco, min)
-  ),
-  Média = c(
-    colMeans(colVariaveisAltoRisco),
-    colMeans(colVariaveisBaixoRisco)
-  ),
-  Max = c(
-    sapply(colVariaveisAltoRisco, max),
-    sapply(colVariaveisBaixoRisco, max)
-  ),
-  RiscoEvasao = c(
-    rep("Alto risco", each = ncol(colVariaveisAltoRisco)),
-    rep("Baixo risco", each = ncol(colVariaveisBaixoRisco))
-  )
-)
+dadosEvasao <- function(base) {
+  if(!is.null(base)) {
+    colVariaveisBaixoRisco <- select(filter(base, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
+    colVariaveisAltoRisco <- select(filter(base, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
+    
+    #MIN
+    if(nrow(colVariaveisBaixoRisco) != 0) {
+      minBaixo <- sapply(colVariaveisBaixoRisco, min)
+    } else {
+      minBaixo <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    if(nrow(colVariaveisAltoRisco) != 0) {
+      minAlto <- sapply(colVariaveisAltoRisco, min)
+    } else {
+      minAlto <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    #MÉDIA
+    if(nrow(colVariaveisBaixoRisco) != 0) {
+      mediaBaixo <- colMeans(colVariaveisBaixoRisco)
+    } else {
+      mediaBaixo <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    if(nrow(colVariaveisAltoRisco) != 0) {
+      mediaAlto <- colMeans(colVariaveisAltoRisco)
+    } else {
+      mediaAlto <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    #MAX
+    if(nrow(colVariaveisBaixoRisco) != 0) {
+      maxBaixo <- sapply(colVariaveisBaixoRisco, max)
+    } else {
+      maxBaixo <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    if(nrow(colVariaveisAltoRisco) != 0) {
+      maxAlto <- sapply(colVariaveisAltoRisco, max)
+    } else {
+      maxAlto <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    data.frame(
+      Indicador = c(
+        c(1:ncol(colVariaveisBaixoRisco)), 
+        c(1:ncol(colVariaveisBaixoRisco))
+      ),
+      Min = c(
+        minBaixo,
+        minAlto
+      ),
+      Média = c(
+        mediaBaixo,
+        mediaAlto
+      ),
+      Max = c(
+        maxBaixo,
+        maxAlto
+      ),
+      RiscoEvasao = c(
+        rep("Alto risco", each = ncol(colVariaveisAltoRisco)),
+        rep("Baixo risco", each = ncol(colVariaveisBaixoRisco))
+      )
+    )
+  } else {
+    NULL
+  }
+}
 
 #Construtos de evasão
 
@@ -585,7 +633,7 @@ shinyServer(function(input, output) {
       g$chart(color = c('green', 'red'))
       g
     } else {
-      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 1)
+      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
     }
   })
   
@@ -786,11 +834,20 @@ shinyServer(function(input, output) {
       }
     }
     
-    indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseEvasao))
-    indSelecionados <- sort(indSelecionados)
-    g <- nPlot(Média ~ Indicador, data = dadosEvasao[indSelecionados,], group = "RiscoEvasao", type = 'multiBarHorizontalChart', width = 600)
-    g$chart(color = c('red', 'green'))
-    g
+    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
+      base <- dadosEvasao(baseFiltrada())
+    } else {
+      base <- NULL
+    }
+    if(!is.null(base)) {
+      indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseEvasao))
+      indSelecionados <- sort(indSelecionados)
+      g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], group = "RiscoEvasao", type = 'multiBarHorizontalChart', width = 600)
+      g$chart(color = c('red', 'green'))
+      g
+    } else {
+      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
+    }
   })
   
   #Checkboxes p/ construtos de evasão
