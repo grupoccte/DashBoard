@@ -66,10 +66,13 @@ dashboardPage(
                            id="tabDesempenho",side = "left", width = 12,
                            selected = "1",
                            tabPanel("Geral",value= "1", 
-                                    showOutput("graficoDesempenho", "nvd3"),
+                                    showOutput("graficoDesempenhoGeral", "nvd3"),
                                     uiOutput("construtosDesempenho")
                                     ),
-                           tabPanel("Indicadores",value="2" ,""),
+                           tabPanel("Indicadores",value="2" ,
+                                    showOutput("graficoDesempenhoInd", "highcharts"),
+                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")
+                                    ),
                            tabPanel("Alunos",value="3" ,"")
                          )
                        ),

@@ -613,7 +613,8 @@ shinyServer(function(input, output) {
     )
   })
   
-  output$graficoDesempenho <- renderChart2({
+  #Gráfico geral de desempenho
+  output$graficoDesempenhoGeral <- renderChart2({
     indSelecionados <- input$indicadoresDesempenho_rows_selected
     
     if(!is.null(indSelecionados)) {
@@ -644,6 +645,27 @@ shinyServer(function(input, output) {
       g
     } else {
       nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
+    }
+  })
+  
+  #Gráfico de indicadores de desempenho
+  output$graficoDesempenhoInd <- renderChart2({
+    indicador <- input$indicadoresDesempenho_rows_selected
+    if(!is.null(indicador) && indicador != 0) {
+      titulo <- as.character(dicionarioBaseDesempenho[indicador,]$Descrição.sobre.as.variáveis)
+      subtitulo <- as.character(dicionarioBaseDesempenho[indicador,]$Construto)
+      var <- as.character(dicionarioBaseDesempenho[indicador,]$Variável)
+      alunos <- select(baseFiltrada(), one_of(as.character(c("Aluno", var, "PROBABILIDADE", "DESEMPENHO_BINARIO"))))
+      colnames(alunos) <- c("Nome", "Valor", "Probabilidade", "Desempenho")
+      alunos["Aluno"] <- c(1:nrow(alunos))
+      alunos$Desempenho[alunos$Desempenho == "0"] <- "Satistatório"
+      alunos$Desempenho[alunos$Desempenho == "1"] <- "Insatisfatório"
+      h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Desempenho", size = "Probabilidade")
+      h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
+      h$chart(zoomType = "xy")
+      h
+    } else {
+      hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
     }
   })
   
