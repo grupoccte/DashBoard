@@ -16,3 +16,7 @@
 #InsatisfatorioBox {padding-right: 0px;}
 #AltoRiscoBox {padding-right: 0px;}
 #BaixoRiscoBox {padding-right: 0px;}
+
+#graficoGeral .nv-series {
+	display: none;
+}

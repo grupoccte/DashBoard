@@ -32,7 +32,7 @@ dashboardPage(
                          tabBox(
                            id = "tabGeral",side = "left", width = 12,
                            selected = "1",
-                           tabPanel("Geral",value = "1" ,showOutput("graficoGeral", "nvd3")),
+                           tabPanel("Geral",value = "1" , HTML("<center><h3>Média dos Indicadores</h3></center>"),showOutput("graficoGeral", "nvd3")),
                            tabPanel("Indicadores",value = "2", 
                                     conditionalPanel("input.indicadoresGeral_rows_selected == 0", h5("Nenhum indicador selecionado")),
                                     conditionalPanel("input.indicadoresGeral_rows_selected != 0", showOutput("graficoGeralIndicadores", "highcharts"), tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom"))

@@ -20,13 +20,19 @@ listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGera
 listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
 #::Calculo de médias, máximos e mínimos para análise geral
 
-colVariaveis <- select(baseGeral, one_of(as.character(listaVariaveisGeral$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
-visGeralIndicadores <- data.frame(
-  Indicador = paste("Ind", c(1:ncol(colVariaveis))),
-  Min = sapply(colVariaveis, min), 
-  Média = colMeans(colVariaveis),
-  Max = sapply(colVariaveis, max)
-) 
+visGeralIndicadores <- function(base) {
+  if(!is.null(base)) {
+    colVariaveis <- select(base, one_of(as.character(listaVariaveisGeral$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
+    data.frame(
+      Indicador = c(1:ncol(colVariaveis)),
+      Min = sapply(colVariaveis, min), 
+      Média = colMeans(colVariaveis),
+      Max = sapply(colVariaveis, max)
+    )
+  } else {
+    NULL
+  }
+}
 
 #::Dados p/ análise de desempenho
 
@@ -53,31 +59,77 @@ Varfinal <- c(Varfinal, nrow(dicionarioBaseDesempenho))
 DFconstrutosDesempenho <- data.frame(Construto, Varinicial, Varfinal)
 
 #Tratamento de dados para plotagem de gráfico de desempenho
-colVariaveisSat <- select(filter(baseDesempenho, DESEMPENHO_BINARIO == "0"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
-colVariaveisInsat <- select(filter(baseDesempenho, DESEMPENHO_BINARIO == "1"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
 
-dadosDesempenho <- data.frame(
-  Indicador = c(
-    paste("Ind", c(1:ncol(colVariaveisSat))), 
-    paste("Ind", c(1:ncol(colVariaveisSat)))
-  ),
-  Min = c(
-    Min = sapply(colVariaveisSat, min),
-    Min = sapply(colVariaveisInsat, min)
-  ),
-  Média = c(
-    colMeans(colVariaveisSat),
-    colMeans(colVariaveisInsat)
-  ),
-  Max = c(
-    sapply(colVariaveisSat, max),
-    sapply(colVariaveisInsat, max)
-  ),
-  Desempenho = c(
-    rep("Satisfatório", each = ncol(colVariaveisSat)),
-    rep("Insatisfatório", each = ncol(colVariaveisInsat))
-  )
-)
+dadosDesempenho <- function(base) {
+  if(!is.null(base)) {
+    colVariaveisSat <- select(filter(base, DESEMPENHO_BINARIO == "0"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
+    colVariaveisInsat <- select(filter(base, DESEMPENHO_BINARIO == "1"), one_of(as.character(dicionarioBaseDesempenho$Variável)))
+    
+    #MIN
+    if(nrow(colVariaveisSat) != 0) {
+      minSat <- sapply(colVariaveisSat, min)
+    } else {
+      minSat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    if(nrow(colVariaveisInsat) != 0) {
+      minInsat <- sapply(colVariaveisInsat, min)
+    } else {
+      minInsat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    #MÉDIA
+    if(nrow(colVariaveisSat) != 0) {
+      mediaSat <- colMeans(colVariaveisSat)
+    } else {
+      mediaSat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    if(nrow(colVariaveisInsat) != 0) {
+      mediaInsat <- colMeans(colVariaveisInsat)
+    } else {
+      mediaInsat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    #MAX
+    if(nrow(colVariaveisSat) != 0) {
+      maxSat <- sapply(colVariaveisSat, max)
+    } else {
+      maxSat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    if(nrow(colVariaveisInsat) != 0) {
+      maxInsat <- sapply(colVariaveisInsat, max)
+    } else {
+      maxInsat <- rep(0, each = ncol(colVariaveisSat))
+    }
+    
+    data.frame(
+      Indicador = c(
+        c(1:ncol(colVariaveisSat)), 
+        c(1:ncol(colVariaveisSat))
+      ),
+      Min = c(
+        minSat,
+        minInsat
+      ),
+      Média = c(
+        mediaSat,
+        mediaInsat
+      ),
+      Max = c(
+        maxSat,
+        maxInsat
+      ),
+      Desempenho = c(
+        rep("Satisfatório", each = ncol(colVariaveisSat)),
+        rep("Insatisfatório", each = ncol(colVariaveisInsat))
+      )
+    )
+  } else {
+    NULL
+  }
+}
 
 #Complemento dos construtos de desempenho (variáveis que não estão associadas a nenhum construto no dataframe após leitura do dicionário)
 
@@ -109,28 +161,76 @@ calcConstrutosDesempenho <- function(linhas, construtos) {
 colVariaveisBaixoRisco <- select(filter(baseEvasao, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
 colVariaveisAltoRisco <- select(filter(baseEvasao, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
 
-dadosEvasao <- data.frame(
-  Indicador = c(
-    paste("Ind", c(1:ncol(colVariaveisBaixoRisco))), 
-    paste("Ind", c(1:ncol(colVariaveisBaixoRisco)))
-  ),
-  Min = c(
-    Min = sapply(colVariaveisAltoRisco, min),
-    Min = sapply(colVariaveisBaixoRisco, min)
-  ),
-  Média = c(
-    colMeans(colVariaveisAltoRisco),
-    colMeans(colVariaveisBaixoRisco)
-  ),
-  Max = c(
-    sapply(colVariaveisAltoRisco, max),
-    sapply(colVariaveisBaixoRisco, max)
-  ),
-  RiscoEvasao = c(
-    rep("Alto risco", each = ncol(colVariaveisAltoRisco)),
-    rep("Baixo risco", each = ncol(colVariaveisBaixoRisco))
-  )
-)
+dadosEvasao <- function(base) {
+  if(!is.null(base)) {
+    colVariaveisBaixoRisco <- select(filter(base, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
+    colVariaveisAltoRisco <- select(filter(base, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
+    
+    #MIN
+    if(nrow(colVariaveisBaixoRisco) != 0) {
+      minBaixo <- sapply(colVariaveisBaixoRisco, min)
+    } else {
+      minBaixo <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    if(nrow(colVariaveisAltoRisco) != 0) {
+      minAlto <- sapply(colVariaveisAltoRisco, min)
+    } else {
+      minAlto <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    #MÉDIA
+    if(nrow(colVariaveisBaixoRisco) != 0) {
+      mediaBaixo <- colMeans(colVariaveisBaixoRisco)
+    } else {
+      mediaBaixo <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    if(nrow(colVariaveisAltoRisco) != 0) {
+      mediaAlto <- colMeans(colVariaveisAltoRisco)
+    } else {
+      mediaAlto <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    #MAX
+    if(nrow(colVariaveisBaixoRisco) != 0) {
+      maxBaixo <- sapply(colVariaveisBaixoRisco, max)
+    } else {
+      maxBaixo <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    if(nrow(colVariaveisAltoRisco) != 0) {
+      maxAlto <- sapply(colVariaveisAltoRisco, max)
+    } else {
+      maxAlto <- rep(0, each = ncol(colVariaveisBaixoRisco))
+    }
+    
+    data.frame(
+      Indicador = c(
+        c(1:ncol(colVariaveisBaixoRisco)), 
+        c(1:ncol(colVariaveisBaixoRisco))
+      ),
+      Min = c(
+        minBaixo,
+        minAlto
+      ),
+      Média = c(
+        mediaBaixo,
+        mediaAlto
+      ),
+      Max = c(
+        maxBaixo,
+        maxAlto
+      ),
+      RiscoEvasao = c(
+        rep("Alto risco", each = ncol(colVariaveisAltoRisco)),
+        rep("Baixo risco", each = ncol(colVariaveisBaixoRisco))
+      )
+    )
+  } else {
+    NULL
+  }
+}
 
 #Construtos de evasão
 
@@ -233,7 +333,7 @@ shinyServer(function(input, output) {
   
   ##Base de acordo com os parametros escolhidos e de acordo com a base de dados
   baseFiltrada <- reactive({
-    if(!is.null(input$aplicacao)) {
+    if(!is.null(input$aplicacao) && !is.null(input$curso) && input$curso != "" && !is.null(input$periodo) && input$periodo != "" && !is.null(input$disciplina) && input$disciplina != "") {
       if(input$aplicacao == 1){
         filter(baseGeral, Curso == input$curso, Periodo == input$periodo, Disciplina == input$disciplina)
       }else if(input$aplicacao == 2){
@@ -329,14 +429,25 @@ shinyServer(function(input, output) {
       indSelecionados <- c(1:nrow(listaVariaveisGeral))
     }
     indSelecionados <- sort(indSelecionados)
-    g <- nPlot(Média ~ Indicador, data = visGeralIndicadores[indSelecionados,], type = 'multiBarHorizontalChart', width = 600)
-    g$chart(showControls = F);
-    g
+    if(!is.null(input$aplicacao) && input$aplicacao == 1) {
+      base <- visGeralIndicadores(baseFiltrada())
+    } else {
+      base <- NULL
+    }
+    if(!is.null(base) && input$aplicacao == 1) {
+      g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], title = "Média dos indicadores geral", type = 'multiBarHorizontalChart', width = 600)
+      g$chart(showControls = F)
+      g
+    } else {
+      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
+    }
   })
   
   #Gráfico "indicadores" da visão geral dos dados
   
   output$graficoGeralIndicadores <- renderChart2({
+    base <- visGeralIndicadores(baseFiltrada())
+    
     indicador <- input$indicadoresGeral_rows_selected
     if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
       listaAlunos <- select(baseFiltrada(), Aluno, one_of(as.character(listaVariaveisGeral[indicador,]$Variável)))
@@ -344,9 +455,9 @@ shinyServer(function(input, output) {
       listaAlunos["Aluno"] <- c(1:nrow(baseFiltrada()))
       names(listaAlunos$Nome) <- rep("nome", each = nrow(listaAlunos))
       
-      min <- visGeralIndicadores[indicador,]$Min
-      media <- round(visGeralIndicadores[indicador,]$Média, 1)
-      max <- visGeralIndicadores[indicador,]$Max
+      min <- base[indicador,]$Min
+      media <- round(base[indicador,]$Média, 1)
+      max <- base[indicador,]$Max
       hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y + '<br />Min: ", min, "<br />Média: ", media, "<br />Max: ", max, "';}!#", sep = "")
       
       descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
@@ -522,9 +633,18 @@ shinyServer(function(input, output) {
     }
     indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseDesempenho))
     indSelecionados <- sort(indSelecionados)
-    g <- nPlot(Média ~ Indicador, data = dadosDesempenho[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
-    g$chart(color = c('green', 'red'))
-    g
+    if(!is.null(input$aplicacao) && input$aplicacao == 2) {
+      base <- dadosDesempenho(baseFiltrada())
+    } else {
+      base <- NULL
+    }
+    if(!is.null(base)) {
+      g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
+      g$chart(color = c('green', 'red'))
+      g
+    } else {
+      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
+    }
   })
   
   #Checkboxes p/ construtos de desempenho
@@ -641,7 +761,7 @@ shinyServer(function(input, output) {
   
   #retorna tabela de alunos evasao
   output$alunosEvasao <- renderDataTable({
-    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
+    if(!is.null(input$aplicacao) && input$aplicacao == 3 && !is.null(baseFiltrada())) {
       listaAlunosEvasao <- data.frame(baseFiltrada()[,c("Aluno","EVASAO")])
       listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 0] <- "Baixo"
       listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 1] <- "Alto"
@@ -687,11 +807,12 @@ shinyServer(function(input, output) {
   #BoxEvasao baixo risco
   output$BaixoRiscoBox <- renderValueBox({
     baixoRisco <- 0 
-    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
-      classesEvas <- table(baseFiltrada()$EVASAO)
+    base <- baseFiltrada()
+    if(!is.null(input$aplicacao) && input$aplicacao == 3 && !is.null(base)) {
+      classesEvas <- table(base$EVASAO)
       Baixo <- if (!is.na(classesEvas["0"])) classesEvas["0"] else 0
       
-      baixoRisco <- round((Baixo / nrow(baseFiltrada())) * 100, 2)
+      baixoRisco <- round((Baixo / nrow(base)) * 100, 2)
       if(is.na(baixoRisco)) {
         baixoRisco <- 0
       }
@@ -705,11 +826,12 @@ shinyServer(function(input, output) {
   #BoxEvasao alto risco
   output$AltoRiscoBox <- renderValueBox({ 
     altoRisco <- 0
-    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
-      classesEvas <- table(baseFiltrada()$EVASAO)
+    base <- baseFiltrada()
+    if(!is.null(input$aplicacao) && input$aplicacao == 3 && !is.null(base)) {
+      classesEvas <- table(base$EVASAO)
       Alto <- if (!is.na(classesEvas["1"])) classesEvas["1"] else 0
       
-      altoRisco <- round((Alto / nrow(baseFiltrada())) * 100, 2)
+      altoRisco <- round((Alto / nrow(base)) * 100, 2)
       if(is.na(altoRisco)) {
         altoRisco <- 0
       }
@@ -741,11 +863,20 @@ shinyServer(function(input, output) {
       }
     }
     
-    indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseEvasao))
-    indSelecionados <- sort(indSelecionados)
-    g <- nPlot(Média ~ Indicador, data = dadosEvasao[indSelecionados,], group = "RiscoEvasao", type = 'multiBarHorizontalChart', width = 600)
-    g$chart(color = c('red', 'green'))
-    g
+    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
+      base <- dadosEvasao(baseFiltrada())
+    } else {
+      base <- NULL
+    }
+    if(!is.null(base)) {
+      indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseEvasao))
+      indSelecionados <- sort(indSelecionados)
+      g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], group = "RiscoEvasao", type = 'multiBarHorizontalChart', width = 600)
+      g$chart(color = c('red', 'green'))
+      g
+    } else {
+      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
+    }
   })
   
   #Checkboxes p/ construtos de evasão
