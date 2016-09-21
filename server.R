@@ -375,13 +375,17 @@ shinyServer(function(input, output) {
       indSelecionados <- c(1:nrow(listaVariaveisGeral))
     }
     indSelecionados <- sort(indSelecionados)
-    base <- visGeralIndicadores(baseFiltrada())
+    if(!is.null(input$aplicacao) && input$aplicacao == 1) {
+      base <- visGeralIndicadores(baseFiltrada())
+    } else {
+      base <- NULL
+    }
     if(!is.null(base) && input$aplicacao == 1) {
       g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], title = "Média dos indicadores geral", type = 'multiBarHorizontalChart', width = 600)
       g$chart(showControls = F)
       g
     } else {
-      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 1)
+      nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
     }
   })
   
@@ -571,7 +575,7 @@ shinyServer(function(input, output) {
     }
     indSelecionados <- c(indSelecionados, indSelecionados + nrow(dicionarioBaseDesempenho))
     indSelecionados <- sort(indSelecionados)
-    if(input$aplicacao == 2) {
+    if(!is.null(input$aplicacao) && input$aplicacao == 2) {
       base <- dadosDesempenho(baseFiltrada())
     } else {
       base <- NULL
@@ -680,7 +684,7 @@ shinyServer(function(input, output) {
   
   #retorna tabela de alunos evasao
   output$alunosEvasao <- renderDataTable({
-    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
+    if(!is.null(input$aplicacao) && input$aplicacao == 3 && !is.null(baseFiltrada())) {
       listaAlunosEvasao <- data.frame(baseFiltrada()[,c("Aluno","EVASAO")])
       listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 0] <- "Baixo"
       listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 1] <- "Alto"
@@ -726,11 +730,12 @@ shinyServer(function(input, output) {
   #BoxEvasao baixo risco
   output$BaixoRiscoBox <- renderValueBox({
     baixoRisco <- 0 
-    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
-      classesEvas <- table(baseFiltrada()$EVASAO)
+    base <- baseFiltrada()
+    if(!is.null(input$aplicacao) && input$aplicacao == 3 && !is.null(base)) {
+      classesEvas <- table(base$EVASAO)
       Baixo <- if (!is.na(classesEvas["0"])) classesEvas["0"] else 0
       
-      baixoRisco <- round((Baixo / nrow(baseFiltrada())) * 100, 2)
+      baixoRisco <- round((Baixo / nrow(base)) * 100, 2)
       if(is.na(baixoRisco)) {
         baixoRisco <- 0
       }
@@ -744,11 +749,12 @@ shinyServer(function(input, output) {
   #BoxEvasao alto risco
   output$AltoRiscoBox <- renderValueBox({ 
     altoRisco <- 0
-    if(!is.null(input$aplicacao) && input$aplicacao == 3) {
-      classesEvas <- table(baseFiltrada()$EVASAO)
+    base <- baseFiltrada()
+    if(!is.null(input$aplicacao) && input$aplicacao == 3 && !is.null(base)) {
+      classesEvas <- table(base$EVASAO)
       Alto <- if (!is.na(classesEvas["1"])) classesEvas["1"] else 0
       
-      altoRisco <- round((Alto / nrow(baseFiltrada())) * 100, 2)
+      altoRisco <- round((Alto / nrow(base)) * 100, 2)
       if(is.na(altoRisco)) {
         altoRisco <- 0
       }
