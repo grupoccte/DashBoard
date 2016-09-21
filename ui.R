@@ -104,7 +104,9 @@ dashboardPage(
                                     showOutput("graficoEvasao", "nvd3"),
                                     uiOutput("construtosEvasao")
                            ),
-                           tabPanel("Indicadores",value = "2" ,""),
+                           tabPanel("Indicadores",value = "2" ,
+                                    showOutput("graficoEvasaoInd", "highcharts"),
+                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")),
                            tabPanel("Alunos",value = "3" ,"")
                          )
                        ),

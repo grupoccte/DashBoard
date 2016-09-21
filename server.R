@@ -462,7 +462,7 @@ shinyServer(function(input, output) {
       
       descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
       h <- hPlot(Valor ~ Aluno, data = listaAlunos, type = "bubble", title = descricao, size = 1)
-      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
+      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit, width = 600)
       h$chart(zoomType = "xy");
       h
     } else {
@@ -663,6 +663,7 @@ shinyServer(function(input, output) {
       h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Desempenho", size = "Probabilidade")
       h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
       h$chart(zoomType = "xy")
+      h$params$width <- 600
       h
     } else {
       hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
@@ -705,21 +706,6 @@ shinyServer(function(input, output) {
       )
     )
   })
-  #Grafico "indicadores" da analise de desempenho
-  output$graficoDesempenhoIndicadores <- renderChart2({
-    indicadorDesempenho <- input$indicadoresDesempenho_rows_selected
-    if(!is.null(indicadorDesempenho) && indicadorDesempenho != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
-      listaAlunoDese <- select(baseFiltrada(), Aluno, one_of(as.character(listaVariaveisGeral[indicadorDesempenho,]$Variável)))
-      listaAlunoDese['Aluno'] <- c(1:nrow(baseFiltrada()))
-      colnames(listaAlunos) <- c("Nome", "Valor")
-      descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
-      g <- hPlot(Aluno ~ VAR01, data = listaAlunoDese, type = "bubble", title = descricao,size = "PROBABILIDADE", group = "EVASAO")
-      g$colors('green', 'red')
-    } else {
-      hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
-    }
-  })
-  
   
   #Analise de evasao
   
@@ -898,6 +884,29 @@ shinyServer(function(input, output) {
       g
     } else {
       nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
+    }
+  })
+  
+  #Gráfico de indicadores de evasão
+  output$graficoEvasaoInd <- renderChart2({
+    indicador <- input$indicadoresEvasao_rows_selected
+    base <- baseFiltrada()
+    if(!is.null(indicador) && indicador != 0 && !is.null(base)) {
+      titulo <- as.character(dicionarioBaseEvasao[indicador,]$INDICADOR)
+      subtitulo <- as.character(dicionarioBaseEvasao[indicador,]$CONSTRUTOS)
+      var <- as.character(dicionarioBaseEvasao[indicador,]$ID)
+      alunos <- select(base, one_of(as.character(c("Aluno", var, "PROBABILIDADE", "EVASAO"))))
+      colnames(alunos) <- c("Nome", "Valor", "Probabilidade", "Evasao")
+      alunos["Aluno"] <- c(1:nrow(alunos))
+      alunos$Evasao[alunos$Evasao == "0"] <- "Baixo Risco"
+      alunos$Evasao[alunos$Evasao == "1"] <- "Alto Risco"
+      h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Evasao", size = "Probabilidade")
+      h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
+      h$chart(zoomType = "xy")
+      h$params$width <- 600
+      h
+    } else {
+      hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
     }
   })
   
