@@ -21,7 +21,7 @@ listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
 #::Calculo de médias, máximos e mínimos para análise geral
 
 visGeralIndicadores <- function(base) {
-  if(!is.null(base)) {
+  if(!is.null(base) && nrow(base) != 0) {
     colVariaveis <- select(base, one_of(as.character(listaVariaveisGeral$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
     data.frame(
       Indicador = c(1:ncol(colVariaveis)),
@@ -446,13 +446,18 @@ shinyServer(function(input, output) {
   #Gráfico "indicadores" da visão geral dos dados
   
   output$graficoGeralIndicadores <- renderChart2({
-    base <- visGeralIndicadores(baseFiltrada())
-    
+    if(!is.null(input$aplicacao) && input$aplicacao == 1) {
+      base <- visGeralIndicadores(baseFiltrada())
+    } else {
+      base <- NULL
+    }
     indicador <- input$indicadoresGeral_rows_selected
-    if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
-      listaAlunos <- select(baseFiltrada(), Aluno, one_of(as.character(listaVariaveisGeral[indicador,]$Variável)))
+    
+    baseFil <- baseFiltrada()
+    if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(base) && !is.null(base)) {
+      listaAlunos <- select(baseFil, Aluno, one_of(as.character(listaVariaveisGeral[indicador,]$Variável)))
       colnames(listaAlunos) <- c("Nome", "Valor")
-      listaAlunos["Aluno"] <- c(1:nrow(baseFiltrada()))
+      listaAlunos["Aluno"] <- c(1:nrow(baseFil))
       names(listaAlunos$Nome) <- rep("nome", each = nrow(listaAlunos))
       
       min <- base[indicador,]$Min
@@ -651,15 +656,23 @@ shinyServer(function(input, output) {
   #Gráfico de indicadores de desempenho
   output$graficoDesempenhoInd <- renderChart2({
     indicador <- input$indicadoresDesempenho_rows_selected
-    if(!is.null(indicador) && indicador != 0) {
+    base <- baseFiltrada()
+    if(!is.null(indicador) && indicador != 0 && !is.null(base)) {
       titulo <- as.character(dicionarioBaseDesempenho[indicador,]$Descrição.sobre.as.variáveis)
       subtitulo <- as.character(dicionarioBaseDesempenho[indicador,]$Construto)
+      
       var <- as.character(dicionarioBaseDesempenho[indicador,]$Variável)
-      alunos <- select(baseFiltrada(), one_of(as.character(c("Aluno", var, "PROBABILIDADE", "DESEMPENHO_BINARIO"))))
+      alunos <- select(base, one_of(as.character(c("Aluno", var, "PROBABILIDADE", "DESEMPENHO_BINARIO"))))
       colnames(alunos) <- c("Nome", "Valor", "Probabilidade", "Desempenho")
-      alunos["Aluno"] <- c(1:nrow(alunos))
+      if(nrow(alunos) != 0) {
+        alunos["Aluno"] <- c(1:nrow(alunos)) #tratamento de erro, if para não contar de 1 à 0 (coluna de 2 elementos) e inserir em um dataframe com 0 linhas
+      } else {
+        alunos <- data.frame(Nome = character(), Valor = integer(), Probabilidade = double(), Desempenho = double(), Aluno = integer())
+      }
+      
       alunos$Desempenho[alunos$Desempenho == "0"] <- "Satistatório"
       alunos$Desempenho[alunos$Desempenho == "1"] <- "Insatisfatório"
+      
       h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Desempenho", size = "Probabilidade")
       h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
       h$chart(zoomType = "xy")
@@ -897,7 +910,13 @@ shinyServer(function(input, output) {
       var <- as.character(dicionarioBaseEvasao[indicador,]$ID)
       alunos <- select(base, one_of(as.character(c("Aluno", var, "PROBABILIDADE", "EVASAO"))))
       colnames(alunos) <- c("Nome", "Valor", "Probabilidade", "Evasao")
-      alunos["Aluno"] <- c(1:nrow(alunos))
+      
+      if(nrow(alunos) != 0) {
+        alunos["Aluno"] <- c(1:nrow(alunos))
+      } else {
+        alunos <- data.frame(Nome = character(), Valor = integer(), Probabilidade = double(), Desempenho = double(), Aluno = integer())
+      }
+      
       alunos$Evasao[alunos$Evasao == "0"] <- "Baixo Risco"
       alunos$Evasao[alunos$Evasao == "1"] <- "Alto Risco"
       h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Evasao", size = "Probabilidade")
