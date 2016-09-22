@@ -492,13 +492,14 @@ shinyServer(function(input, output) {
     aluno <- as.double(select(filter(baseFiltrada(), Aluno == alunoSelect),one_of(as.character(listaVariaveisGeral$Variável))))
     mediaGeral <- as.double(colMeans(select(baseFiltrada(), one_of(as.character(listaVariaveisGeral$Variável)))))
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
-    dataGeral <- data.frame(listaVariaveisGeral$Variável,aluno,mediaGeral)
-    colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma")
+    listaVariaveisGeral["N"] <- c(1:nrow(listaVariaveisGeral))
+    dataGeral <- data.frame(listaVariaveisGeral$N,aluno,mediaGeral,listaVariaveisGeral$Descrição.sobre.as.variáveis)
+    colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma","Descricao")
     dataGeral <- dataGeral[with(dataGeral, order(Var)), ]
     g <- gather(dataGeral, var, value, Freq_Aluno, Media_Turma) %>%
-      plot_ly(x = value, y = Var, mode = "markers",
+      plot_ly(x = value, y = Var,mode = "markers",
               color = var, colors = c("pink", "blue")) %>%
-      add_trace(x = value, y = Var, mode = "lines",
+      add_trace(x = value, y = Var,mode = "lines",
                 group = Var, showlegend = F, line = list(color = "gray")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
@@ -768,8 +769,9 @@ shinyServer(function(input, output) {
     aluno <- as.double(select(filter(baseFiltrada(), Aluno == alunoSelect),one_of(as.character(listaVariaveisDesempenho$Variável))))
     mediaSat <- as.double(colMeans(select(filter(baseFiltrada(), DESEMPENHO_BINARIO == "0"),one_of(as.character(listaVariaveisDesempenho$Variável)))))
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
-    dataDesempenho <- data.frame(listaVariaveisDesempenho$Variável,mediaSat,aluno)
-    colnames(dataDesempenho) <- c("Var","Satisfatorio","Freq_Aluno")
+    listaVariaveisDesempenho["N"] <- c(1:nrow(listaVariaveisDesempenho))
+    dataDesempenho <- data.frame(listaVariaveisDesempenho$N,mediaSat,aluno,listaVariaveisDesempenho$Descrição.sobre.as.variáveis)
+    colnames(dataDesempenho) <- c("Var","Satisfatorio","Freq_Aluno","Descricao")
     dataDesempenho <- dataDesempenho[with(dataDesempenho, order(Var)), ]
     g <- gather(dataDesempenho, var, value, Freq_Aluno, Satisfatorio) %>%
       plot_ly(x = value, y = Var, mode = "markers",
@@ -1033,8 +1035,9 @@ shinyServer(function(input, output) {
     mediaBaixoRisco <- as.double(colMeans(select(filter(baseFiltrada(), EVASAO == "0"),one_of(as.character(listaVariaveisEvasao$ID)))))
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
     # no eixo y ta aparecendo o indicador de 2 em 2
-    dataEvasao <- data.frame(listaVariaveisEvasao$ID,mediaBaixoRisco,aluno)
-    colnames(dataEvasao) <- c("Var","Baixo_Risco","Freq_Aluno")
+    listaVariaveisEvasao["N"] <- c(1:nrow(listaVariaveisEvasao))
+    dataEvasao <- data.frame(listaVariaveisEvasao$N,mediaBaixoRisco,aluno,listaVariaveisEvasao$INDICADOR)
+    colnames(dataEvasao) <- c("Var","Baixo_Risco","Freq_Aluno","Descricao")
     dataEvasao <- dataEvasao[with(dataEvasao, order(Var)), ]
     g <- gather(dataEvasao, var, value, Freq_Aluno, Baixo_Risco) %>%
       plot_ly(x = value, y = Var, mode = "markers",
