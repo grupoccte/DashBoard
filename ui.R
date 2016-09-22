@@ -68,10 +68,12 @@ dashboardPage(
                            id="tabDesempenho",side = "left", width = 12,
                            selected = "1",
                            tabPanel("Geral",value= "1", 
-                                    showOutput("graficoDesempenho", "nvd3"),
+                                    showOutput("graficoDesempenhoGeral", "nvd3"),
                                     uiOutput("construtosDesempenho")
                                     ),
-                           tabPanel("Indicadores",value="2" ,""),
+                           tabPanel("Indicadores",value="2" ,
+                                    showOutput("graficoDesempenhoInd", "highcharts"),
+                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")),
                            tabPanel("Alunos",value="3" ,
                                     plotly::plotlyOutput('graficoDesempenhoAlunos')
                                     )
@@ -96,8 +98,8 @@ dashboardPage(
                        column(
                          class = "coluna",
                          width=8,
-                         valueBoxOutput("AltoRiscoBox", width = 6),
                          valueBoxOutput("BaixoRiscoBox",width = 6),
+                         valueBoxOutput("AltoRiscoBox", width = 6),
                          tabBox(
                            id="tabEvasao",side = "left", width = 12,
                            selected = "1",
@@ -105,7 +107,9 @@ dashboardPage(
                                     showOutput("graficoEvasao", "nvd3"),
                                     uiOutput("construtosEvasao")
                            ),
-                           tabPanel("Indicadores",value = "2" ,""),
+                           tabPanel("Indicadores",value = "2" ,
+                                    showOutput("graficoEvasaoInd", "highcharts"),
+                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")),
                            tabPanel("Alunos",value = "3" ,
                                     plotly::plotlyOutput('graficoEvasaoAlunos')
                                     )

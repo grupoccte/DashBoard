@@ -24,7 +24,7 @@ listaVariaveisEvasao <- listaVariaveisEvasao[with(listaVariaveisEvasao, order(ID
 #::Calculo de médias, máximos e mínimos para análise geral
 
 visGeralIndicadores <- function(base) {
-  if(!is.null(base)) {
+  if(!is.null(base) && nrow(base) != 0) {
     colVariaveis <- select(base, one_of(as.character(listaVariaveisGeral$Variável))) #Seleciona somente as colunas das variáveis na base geral em função do dicionário
     data.frame(
       Indicador = c(1:ncol(colVariaveis)),
@@ -417,10 +417,11 @@ shinyServer(function(input, output) {
     }else{
       variaveis <- as.character(listaVariaveisGeral$Variável)
       varSelected <- variaveis[input$indicadoresGeral_rows_selected]
-      if(length(varSelected) == 0) {
+      base <- baseFiltrada()
+      if(length(varSelected) == 0 || is.null(base)) {
         listaAlunos <- NULL
       } else{
-        listaAlunos <- baseFiltrada()[,c("Aluno",varSelected)] 
+        listaAlunos <- base[,c("Aluno",varSelected)] 
         colnames(listaAlunos) <- c("Nome","Valor")
     }
       DT::datatable(
@@ -461,13 +462,18 @@ shinyServer(function(input, output) {
   #Gráfico "indicadores" da visão geral dos dados
   
   output$graficoGeralIndicadores <- renderChart2({
-    base <- visGeralIndicadores(baseFiltrada())
-    
+    if(!is.null(input$aplicacao) && input$aplicacao == 1) {
+      base <- visGeralIndicadores(baseFiltrada())
+    } else {
+      base <- NULL
+    }
     indicador <- input$indicadoresGeral_rows_selected
-    if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
-      listaAlunos <- select(baseFiltrada(), Aluno, one_of(as.character(listaVariaveisGeral[indicador,]$Variável)))
+    
+    baseFil <- baseFiltrada()
+    if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(base) && !is.null(base)) {
+      listaAlunos <- select(baseFil, Aluno, one_of(as.character(listaVariaveisGeral[indicador,]$Variável)))
       colnames(listaAlunos) <- c("Nome", "Valor")
-      listaAlunos["Aluno"] <- c(1:nrow(baseFiltrada()))
+      listaAlunos["Aluno"] <- c(1:nrow(baseFil))
       names(listaAlunos$Nome) <- rep("nome", each = nrow(listaAlunos))
       
       min <- base[indicador,]$Min
@@ -477,7 +483,7 @@ shinyServer(function(input, output) {
       
       descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
       h <- hPlot(Valor ~ Aluno, data = listaAlunos, type = "bubble", title = descricao, size = 1)
-      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
+      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit, width = 600)
       h$chart(zoomType = "xy");
       h
     } else {
@@ -618,7 +624,7 @@ shinyServer(function(input, output) {
     }else{
       variaveis <- as.character(dicionarioBaseDesempenho$Variável)
       varSelected <- variaveis[input$indicadoresDesempenho_rows_selected]
-      if(length(varSelected) == 0){
+      if(length(varSelected) == 0 || input$aplicacao != 2){
         listaAlunosDese <- NULL
       }else{
         listaAlunosDese <- baseFiltrada()[,c("Aluno",varSelected,"DESEMPENHO_BINARIO")]
@@ -677,7 +683,8 @@ shinyServer(function(input, output) {
     )
   })
   
-  output$graficoDesempenho <- renderChart2({
+  #Gráfico geral de desempenho
+  output$graficoDesempenhoGeral <- renderChart2({
     indSelecionados <- input$indicadoresDesempenho_rows_selected
     
     if(!is.null(indSelecionados)) {
@@ -708,6 +715,36 @@ shinyServer(function(input, output) {
       g
     } else {
       nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
+    }
+  })
+  
+  #Gráfico de indicadores de desempenho
+  output$graficoDesempenhoInd <- renderChart2({
+    indicador <- input$indicadoresDesempenho_rows_selected
+    base <- baseFiltrada()
+    if(!is.null(indicador) && indicador != 0 && !is.null(base) && input$aplicacao == 2) {
+      titulo <- as.character(dicionarioBaseDesempenho[indicador,]$Descrição.sobre.as.variáveis)
+      subtitulo <- as.character(dicionarioBaseDesempenho[indicador,]$Construto)
+      
+      var <- as.character(dicionarioBaseDesempenho[indicador,]$Variável)
+      alunos <- select(base, one_of(as.character(c("Aluno", var, "PROBABILIDADE", "DESEMPENHO_BINARIO"))))
+      colnames(alunos) <- c("Nome", "Valor", "Probabilidade", "Desempenho")
+      if(nrow(alunos) != 0) {
+        alunos["Aluno"] <- c(1:nrow(alunos)) #tratamento de erro, if para não contar de 1 à 0 (coluna de 2 elementos) e inserir em um dataframe com 0 linhas
+      } else {
+        alunos <- data.frame(Nome = character(), Valor = integer(), Probabilidade = double(), Desempenho = double(), Aluno = integer())
+      }
+      
+      alunos$Desempenho[alunos$Desempenho == "0"] <- "Satistatório"
+      alunos$Desempenho[alunos$Desempenho == "1"] <- "Insatisfatório"
+      
+      h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Desempenho", size = "Probabilidade")
+      h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
+      h$chart(zoomType = "xy")
+      h$params$width <- 600
+      h
+    } else {
+      hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
     }
   })
   
@@ -747,6 +784,7 @@ shinyServer(function(input, output) {
       )
     )
   })
+  
   #Grafico "indicadores" da analise de desempenho
   output$graficoDesempenhoIndicadores <- renderChart2({
     indicadorDesempenho <- input$indicadoresDesempenho_rows_selected
@@ -786,7 +824,6 @@ shinyServer(function(input, output) {
     g
     
   })
-  
   
   #Analise de evasao
   
@@ -893,10 +930,11 @@ shinyServer(function(input, output) {
     }else{
       variaveis <- as.character(listaVariaveisEvasao$ID)
       varSelected <- variaveis[input$indicadoresEvasao_rows_selected]
-      if(length(varSelected) == 0){
+      base <- baseFiltrada()
+      if(length(varSelected) == 0 || is.null(base) || input$aplicacao != 3){
         listaAlunosEvasao <- NULL
       }else{
-        listaAlunosEvasao <- baseFiltrada()[,c("Aluno",varSelected,"EVASAO")]
+        listaAlunosEvasao <- base[,c("Aluno",varSelected,"EVASAO")]
         listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 0] <- "Baixo"
         listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 1] <- "Alto"
         colnames(listaAlunosEvasao) <- c("Nome","Valor","Risco")
@@ -987,6 +1025,35 @@ shinyServer(function(input, output) {
       g
     } else {
       nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
+    }
+  })
+  
+  #Gráfico de indicadores de evasão
+  output$graficoEvasaoInd <- renderChart2({
+    indicador <- input$indicadoresEvasao_rows_selected
+    base <- baseFiltrada()
+    if(!is.null(indicador) && indicador != 0 && !is.null(base) && input$aplicacao == 3) {
+      titulo <- as.character(dicionarioBaseEvasao[indicador,]$INDICADOR)
+      subtitulo <- as.character(dicionarioBaseEvasao[indicador,]$CONSTRUTOS)
+      var <- as.character(dicionarioBaseEvasao[indicador,]$ID)
+      alunos <- select(base, one_of(as.character(c("Aluno", var, "PROBABILIDADE", "EVASAO"))))
+      colnames(alunos) <- c("Nome", "Valor", "Probabilidade", "Evasao")
+      
+      if(nrow(alunos) != 0) {
+        alunos["Aluno"] <- c(1:nrow(alunos))
+      } else {
+        alunos <- data.frame(Nome = character(), Valor = integer(), Probabilidade = double(), Desempenho = double(), Aluno = integer())
+      }
+      
+      alunos$Evasao[alunos$Evasao == "0"] <- "Baixo Risco"
+      alunos$Evasao[alunos$Evasao == "1"] <- "Alto Risco"
+      h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Evasao", size = "Probabilidade")
+      h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
+      h$chart(zoomType = "xy")
+      h$params$width <- 600
+      h
+    } else {
+      hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
     }
   })
   
