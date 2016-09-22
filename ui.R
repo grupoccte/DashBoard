@@ -95,8 +95,8 @@ dashboardPage(
                        column(
                          class = "coluna",
                          width=8,
-                         valueBoxOutput("AltoRiscoBox", width = 6),
                          valueBoxOutput("BaixoRiscoBox",width = 6),
+                         valueBoxOutput("AltoRiscoBox", width = 6),
                          tabBox(
                            id="tabEvasao",side = "left", width = 12,
                            selected = "1",

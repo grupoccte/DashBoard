@@ -402,10 +402,11 @@ shinyServer(function(input, output) {
     } else{
       variaveis <- as.character(listaVariaveisGeral$Variável)
       varSelected <- variaveis[input$indicadoresGeral_rows_selected]
-      if(length(varSelected) == 0) {
+      base <- baseFiltrada()
+      if(length(varSelected) == 0 || is.null(base)) {
         listaAlunos <- NULL
       } else{
-        listaAlunos <- baseFiltrada()[,c("Aluno",varSelected)] 
+        listaAlunos <- base[,c("Aluno",varSelected)] 
         colnames(listaAlunos) <- c("Nome","Valor")
     }
       DT::datatable(
@@ -559,7 +560,7 @@ shinyServer(function(input, output) {
     }else{
       variaveis <- as.character(dicionarioBaseDesempenho$Variável)
       varSelected <- variaveis[input$indicadoresDesempenho_rows_selected]
-      if(length(varSelected) == 0){
+      if(length(varSelected) == 0 || input$aplicacao != 2){
         listaAlunosDese <- NULL
       }else{
         listaAlunosDese <- baseFiltrada()[,c("Aluno",varSelected,"DESEMPENHO_BINARIO")]
@@ -657,7 +658,7 @@ shinyServer(function(input, output) {
   output$graficoDesempenhoInd <- renderChart2({
     indicador <- input$indicadoresDesempenho_rows_selected
     base <- baseFiltrada()
-    if(!is.null(indicador) && indicador != 0 && !is.null(base)) {
+    if(!is.null(indicador) && indicador != 0 && !is.null(base) && input$aplicacao == 2) {
       titulo <- as.character(dicionarioBaseDesempenho[indicador,]$Descrição.sobre.as.variáveis)
       subtitulo <- as.character(dicionarioBaseDesempenho[indicador,]$Construto)
       
@@ -803,10 +804,11 @@ shinyServer(function(input, output) {
     }else{
       variaveis <- as.character(listaVariaveisEvasao$ID)
       varSelected <- variaveis[input$indicadoresEvasao_rows_selected]
-      if(length(varSelected) == 0){
+      base <- baseFiltrada()
+      if(length(varSelected) == 0 || is.null(base) || input$aplicacao != 3){
         listaAlunosEvasao <- NULL
       }else{
-        listaAlunosEvasao <- baseFiltrada()[,c("Aluno",varSelected,"EVASAO")]
+        listaAlunosEvasao <- base[,c("Aluno",varSelected,"EVASAO")]
         listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 0] <- "Baixo"
         listaAlunosEvasao$EVASAO[listaAlunosEvasao$EVASAO == 1] <- "Alto"
         colnames(listaAlunosEvasao) <- c("Nome","Valor","Risco")
@@ -904,7 +906,7 @@ shinyServer(function(input, output) {
   output$graficoEvasaoInd <- renderChart2({
     indicador <- input$indicadoresEvasao_rows_selected
     base <- baseFiltrada()
-    if(!is.null(indicador) && indicador != 0 && !is.null(base)) {
+    if(!is.null(indicador) && indicador != 0 && !is.null(base) && input$aplicacao == 3) {
       titulo <- as.character(dicionarioBaseEvasao[indicador,]$INDICADOR)
       subtitulo <- as.character(dicionarioBaseEvasao[indicador,]$CONSTRUTOS)
       var <- as.character(dicionarioBaseEvasao[indicador,]$ID)
