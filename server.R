@@ -161,13 +161,11 @@ calcConstrutosDesempenho <- function(linhas, construtos) {
 }
 
 #Tratamento de dados para plotagem de gráfico de evasão
-colVariaveisBaixoRisco <- select(filter(baseEvasao, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
-colVariaveisAltoRisco <- select(filter(baseEvasao, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
 
 dadosEvasao <- function(base) {
   if(!is.null(base)) {
-    colVariaveisBaixoRisco <- select(filter(base, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
-    colVariaveisAltoRisco <- select(filter(base, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
+    colVariaveisBaixoRisco <- select(filter(base, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
+    colVariaveisAltoRisco <- select(filter(base, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
     
     #MIN
     if(nrow(colVariaveisBaixoRisco) != 0) {
