@@ -23,7 +23,6 @@ dashboardPage(
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "ajustes.css")
     ),
-    tags$head(tags$script(src="tracking.js")),
     conditionalPanel("input.aplicacao == 1",
                      fluidRow(
                        column(
