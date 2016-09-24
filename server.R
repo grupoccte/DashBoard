@@ -494,6 +494,7 @@ shinyServer(function(input, output) {
       h$series(lista)
       h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
       h$chart(zoomType = "xy", type = "bubble", width = 600);
+      h$plotOptions(bubble = list(minSize = 15, maxSize = 15))
       h$show(cdn = T)
       h
     } else {
