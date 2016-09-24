@@ -472,17 +472,29 @@ shinyServer(function(input, output) {
       listaAlunos <- select(baseFil, Aluno, one_of(as.character(listaVariaveisGeral[indicador,]$Variável)))
       colnames(listaAlunos) <- c("Nome", "Valor")
       listaAlunos["Aluno"] <- c(1:nrow(baseFil))
-      names(listaAlunos$Nome) <- rep("nome", each = nrow(listaAlunos))
       
       min <- base[indicador,]$Min
       media <- round(base[indicador,]$Média, 1)
       max <- base[indicador,]$Max
+      
+      #Tratamento de dados para o gráfico com tooltip (hitbox)
+      lista <- list(
+        list(
+          data = list(),
+          name = ""
+        )
+      )
+      for(i in 1:nrow(listaAlunos)) {
+        lista[[1]]$data[[i]] <- list(x = listaAlunos[i,]$Aluno, y = listaAlunos[i,]$Valor, z = 1, nome = as.character(listaAlunos[i,]$Nome))
+      }
+      
       hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y + '<br />Min: ", min, "<br />Média: ", media, "<br />Max: ", max, "';}!#", sep = "")
       
-      descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
-      h <- hPlot(Valor ~ Aluno, data = listaAlunos, type = "bubble", title = descricao, size = 1)
-      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit, width = 600)
-      h$chart(zoomType = "xy");
+      h <- rCharts::Highcharts$new()
+      h$series(lista)
+      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
+      h$chart(zoomType = "xy", type = "bubble", width = 600);
+      h$show(cdn = T)
       h
     } else {
       hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
@@ -735,7 +747,7 @@ shinyServer(function(input, output) {
       
       alunos$Desempenho[alunos$Desempenho == "0"] <- "Satistatório"
       alunos$Desempenho[alunos$Desempenho == "1"] <- "Insatisfatório"
-      print(head(alunos))
+
       h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Desempenho", size = "Probabilidade")
       h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
       h$chart(zoomType = "xy")

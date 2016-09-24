@@ -37,7 +37,8 @@ dashboardPage(
                                     conditionalPanel("input.indicadoresGeral_rows_selected != 0", showOutput("graficoGeralIndicadores", "highcharts"), tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom"))
                             ),
                            tabPanel("Alunos",value = "3", 
-                                    plotly::plotlyOutput('graficoGeralAlunos')
+                                    plotly::plotlyOutput('graficoGeralAlunos'),
+                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")
                                     )
                          )
                        ),
@@ -74,7 +75,8 @@ dashboardPage(
                                     showOutput("graficoDesempenhoInd", "highcharts"),
                                     tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")),
                            tabPanel("Alunos",value="3" ,
-                                    plotly::plotlyOutput('graficoDesempenhoAlunos')
+                                    plotly::plotlyOutput('graficoDesempenhoAlunos'),
+                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")
                                     )
                          )
                        ),
@@ -110,7 +112,8 @@ dashboardPage(
                                     showOutput("graficoEvasaoInd", "highcharts"),
                                     tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")),
                            tabPanel("Alunos",value = "3" ,
-                                    plotly::plotlyOutput('graficoEvasaoAlunos')
+                                    plotly::plotlyOutput('graficoEvasaoAlunos'),
+                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")
                                     )
                          )
                        ),
