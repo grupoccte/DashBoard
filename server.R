@@ -745,13 +745,36 @@ shinyServer(function(input, output) {
         alunos <- data.frame(Nome = character(), Valor = integer(), Probabilidade = double(), Desempenho = double(), Aluno = integer())
       }
       
-      alunos$Desempenho[alunos$Desempenho == "0"] <- "Satistatório"
-      alunos$Desempenho[alunos$Desempenho == "1"] <- "Insatisfatório"
+      lista <- list(
+        list(
+          data = list(),
+          name = "Insatisfatório"
+        ),
+        list(
+          data = list(),
+          name = "Satisfatório"
+        )
+      )
+      if(nrow(alunos) > 0) {
+        for(i in 1:nrow(alunos)) {
+          if(alunos[i,]$Desempenho == 1) { #insatisfatório
+            lista[[1]]$data[[i]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+          }
+        }
+        for(i in 1:nrow(alunos)) {
+          if(alunos[i,]$Desempenho == 0) { #insatisfatório
+            lista[[2]]$data[[i]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+          }
+        }
+      }
 
-      h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Desempenho", size = "Probabilidade")
+      #h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Desempenho", size = "Probabilidade")
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y;}!#", sep = "")
+      h <- rCharts::Highcharts$new()
+      h$series(lista)
+      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
+      h$chart(zoomType = "xy", type = "bubble", width = 600);
       h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
-      h$chart(zoomType = "xy")
-      h$params$width <- 600
       h
     } else {
       hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
