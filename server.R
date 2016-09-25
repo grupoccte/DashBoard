@@ -514,7 +514,7 @@ shinyServer(function(input, output) {
     dataGeral <- dataGeral[with(dataGeral, order(Var)), ]
     g <- gather(dataGeral, var, value, Freq_Aluno, Media_Turma) %>%
       plot_ly(x = value, y = Var,mode = "markers",
-              color = var, colors = c("pink", "blue")) %>%
+              color = var, colors = c("pink", "blue"),marker = list(size = 13)) %>%
       add_trace(x = value, y = Var,mode = "lines",
                 group = Var, showlegend = F, line = list(color = "gray")) %>%
       layout(
@@ -833,7 +833,7 @@ shinyServer(function(input, output) {
     dataDesempenho <- dataDesempenho[with(dataDesempenho, order(Var)), ]
     g <- gather(dataDesempenho, var, value, Freq_Aluno, Satisfatorio) %>%
       plot_ly(x = value, y = Var, mode = "markers",
-              color = var, colors = c("orange", "green")) %>%
+              color = var, colors = c("orange", "green"),marker = list(size = 13)) %>%
       add_trace(x = value, y = Var, mode = "lines",
                 group = Var, showlegend = F, line = list(color = "gray")) %>%
       layout(
@@ -1155,7 +1155,7 @@ shinyServer(function(input, output) {
     dataEvasao <- dataEvasao[with(dataEvasao, order(Var)), ]
     g <- gather(dataEvasao, var, value, Freq_Aluno, Baixo_Risco) %>%
       plot_ly(x = value, y = Var, mode = "markers",
-              color = var, colors = c("orange", "green")) %>%
+              color = var, colors = c("orange", "green"),marker = list(size = 13)) %>%
       add_trace(x = value, y = Var, mode = "lines",
                 group = Var, showlegend = F, line = list(color = "gray")) %>%
       layout(
