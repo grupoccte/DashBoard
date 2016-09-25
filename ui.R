@@ -72,8 +72,10 @@ dashboardPage(
                                     uiOutput("construtosDesempenho")
                                     ),
                            tabPanel("Indicadores",value="2" ,
-                                    showOutput("graficoDesempenhoInd", "highcharts"),
-                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")),
+                                    conditionalPanel("input.indicadoresDesempenho_rows_selected == 0", h5("Nenhum indicador selecionado")),
+                                    conditionalPanel("input.indicadoresDesempenho_rows_selected != 0", showOutput("graficoDesempenhoInd", "highcharts"), tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom"))
+                           ),
+                        
                            tabPanel("Alunos",value="3" ,
                                     plotly::plotlyOutput('graficoDesempenhoAlunos'),
                                     tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")
@@ -109,8 +111,9 @@ dashboardPage(
                                     uiOutput("construtosEvasao")
                            ),
                            tabPanel("Indicadores",value = "2" ,
-                                    showOutput("graficoEvasaoInd", "highcharts"),
-                                    tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")),
+                                    conditionalPanel("input.indicadoresEvasao_rows_selected == 0", h5("Nenhum indicador selecionado")),
+                                    conditionalPanel("input.indicadoresEvasao_rows_selected != 0", showOutput("graficoEvasaoInd", "highcharts"), tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom"))
+                           ),
                            tabPanel("Alunos",value = "3" ,
                                     plotly::plotlyOutput('graficoEvasaoAlunos'),
                                     tags$h5(style = "text-align: center;", "Clique e arraste sobre uma região para Zoom")

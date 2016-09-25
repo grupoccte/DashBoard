@@ -20,7 +20,6 @@ dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dad
 listaVariaveisDesempenho <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
 listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGeral.csv", encoding = "UTF-8")
 listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
-listaVariaveisEvasao <- listaVariaveisEvasao[with(listaVariaveisEvasao, order(ID)), ]
 #::Calculo de médias, máximos e mínimos para análise geral
 
 visGeralIndicadores <- function(base) {
@@ -481,7 +480,7 @@ shinyServer(function(input, output) {
       lista <- list(
         list(
           data = list(),
-          name = ""
+          name = "Alunos"
         )
       )
       for(i in 1:nrow(listaAlunos)) {
@@ -723,6 +722,7 @@ shinyServer(function(input, output) {
     if(!is.null(base)) {
       g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
       g$chart(color = c('green', 'red'))
+      #g$chart(controlLabels = list(grouped = "test1", stacked = "test2"))
       g
     } else {
       nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
@@ -769,10 +769,11 @@ shinyServer(function(input, output) {
         }
       }
 
-      #h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Desempenho", size = "Probabilidade")
       hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y;}!#", sep = "")
       h <- rCharts::Highcharts$new()
       h$series(lista)
+      h$title(text = titulo)
+      h$subtitle(text = subtitulo)
       h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
       h$chart(zoomType = "xy", type = "bubble", width = 600);
       h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
@@ -817,21 +818,6 @@ shinyServer(function(input, output) {
         colunas[[3]]
       )
     )
-  })
-  
-  #Grafico "indicadores" da analise de desempenho
-  output$graficoDesempenhoIndicadores <- renderChart2({
-    indicadorDesempenho <- input$indicadoresDesempenho_rows_selected
-    if(!is.null(indicadorDesempenho) && indicadorDesempenho != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(baseFiltrada())) {
-      listaAlunoDese <- select(baseFiltrada(), Aluno, one_of(as.character(listaVariaveisGeral[indicadorDesempenho,]$Variável)))
-      listaAlunoDese['Aluno'] <- c(1:nrow(baseFiltrada()))
-      colnames(listaAlunos) <- c("Nome", "Valor")
-      descricao <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
-      g <- hPlot(Aluno ~ VAR01, data = listaAlunoDese, type = "bubble", title = descricao,size = "PROBABILIDADE", group = "EVASAO")
-      g$colors('green', 'red')
-    } else {
-      hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
-    }
   })
   
   #Grafico "Alunos" da analise de desempenho
@@ -1079,13 +1065,40 @@ shinyServer(function(input, output) {
         alunos <- data.frame(Nome = character(), Valor = integer(), Probabilidade = double(), Desempenho = double(), Aluno = integer())
       }
       
-      alunos$Evasao[alunos$Evasao == "0"] <- "Baixo Risco"
-      alunos$Evasao[alunos$Evasao == "1"] <- "Alto Risco"
-      h <- hPlot(Valor ~ Aluno, data = alunos, type = "bubble", title = titulo, subtitle = subtitulo, group = "Evasao", size = "Probabilidade")
+      lista <- list(
+        list(
+          data = list(),
+          name = "Alto risco"
+        ),
+        list(
+          data = list(),
+          name = "Baixo risco"
+        )
+      )
+      if(nrow(alunos) > 0) {
+        for(i in 1:nrow(alunos)) {
+          if(alunos[i,]$Evasao == 1) { #Alto risco
+            lista[[1]]$data[[i]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+          }
+        }
+        for(i in 1:nrow(alunos)) {
+          if(alunos[i,]$Evasao == 0) { #Baixo risco
+            lista[[2]]$data[[i]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+          }
+        }
+      }
+      
+      
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y;}!#", sep = "")
+      h <- rCharts::Highcharts$new()
+      h$series(lista)
+      h$title(text = titulo)
+      h$subtitle(text = subtitulo)
+      h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
+      h$chart(zoomType = "xy", type = "bubble", width = 600)
       h$colors('rgba(223, 63, 63, .5)', 'rgba(60, 199, 113,.5)')
-      h$chart(zoomType = "xy")
-      h$params$width <- 600
       h
+      
     } else {
       hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
     }
