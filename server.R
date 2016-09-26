@@ -513,9 +513,9 @@ shinyServer(function(input, output) {
     colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma","Descricao")
     dataGeral <- dataGeral[with(dataGeral, order(Var)), ]
     g <- gather(dataGeral, var, value, Freq_Aluno, Media_Turma) %>%
-      plot_ly(x = value, y = Var,mode = "markers",
-              color = var, colors = c("pink", "blue"),marker = list(size = 13)) %>%
-      add_trace(x = value, y = Var,mode = "lines",
+      plot_ly(x = value, y = paste("Ind:",Var),mode = "markers",
+              color = var, colors = c("orange", "blue"),marker = list(size = 13)) %>%
+      add_trace(x = value, y = paste("Ind:",Var),mode = "lines",
                 group = Var, showlegend = F, line = list(color = "gray")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
@@ -832,9 +832,9 @@ shinyServer(function(input, output) {
     colnames(dataDesempenho) <- c("Var","Satisfatorio","Freq_Aluno","Descricao")
     dataDesempenho <- dataDesempenho[with(dataDesempenho, order(Var)), ]
     g <- gather(dataDesempenho, var, value, Freq_Aluno, Satisfatorio) %>%
-      plot_ly(x = value, y = Var, mode = "markers",
-              color = var, colors = c("orange", "green"),marker = list(size = 13)) %>%
-      add_trace(x = value, y = Var, mode = "lines",
+      plot_ly(x = value, y = paste("Ind:",Var), mode = "markers",
+              color = var, colors = c("orange", "dark green"),marker = list(size = 13)) %>%
+      add_trace(x = value, y = paste("Ind:",Var), mode = "lines",
                 group = Var, showlegend = F, line = list(color = "gray")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
@@ -1154,9 +1154,9 @@ shinyServer(function(input, output) {
     colnames(dataEvasao) <- c("Var","Baixo_Risco","Freq_Aluno","Descricao")
     dataEvasao <- dataEvasao[with(dataEvasao, order(Var)), ]
     g <- gather(dataEvasao, var, value, Freq_Aluno, Baixo_Risco) %>%
-      plot_ly(x = value, y = Var, mode = "markers",
-              color = var, colors = c("orange", "green"),marker = list(size = 13)) %>%
-      add_trace(x = value, y = Var, mode = "lines",
+      plot_ly(x = value, y = paste("Ind:",Var), mode = "markers",
+              color = var, colors = c("orange", "dark green"),marker = list(size = 13)) %>%
+      add_trace(x = value, y = paste("Ind:",Var), mode = "lines",
                 group = Var, showlegend = F, line = list(color = "gray")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
