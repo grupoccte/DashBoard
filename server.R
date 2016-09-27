@@ -472,9 +472,7 @@ shinyServer(function(input, output) {
       colnames(listaAlunos) <- c("Nome", "Valor")
       listaAlunos["Aluno"] <- c(1:nrow(baseFil))
       
-      min <- base[indicador,]$Min
       media <- round(base[indicador,]$Média, 1)
-      max <- base[indicador,]$Max
       
       #Tratamento de dados para o gráfico com tooltip (hitbox)
       lista <- list(
@@ -487,7 +485,7 @@ shinyServer(function(input, output) {
         lista[[1]]$data[[i]] <- list(x = listaAlunos[i,]$Aluno, y = listaAlunos[i,]$Valor, z = 1, nome = as.character(listaAlunos[i,]$Nome))
       }
       
-      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y + '<br />Min: ", min, "<br />Média: ", media, "<br />Max: ", max, "';}!#", sep = "")
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor do Aluno: ' + this.point.y + '<br />Média da Turma: ", media,"';}!#", sep = "")
       
       h <- rCharts::Highcharts$new()
       h$series(lista)
