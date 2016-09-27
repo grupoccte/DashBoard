@@ -465,6 +465,7 @@ shinyServer(function(input, output) {
       base <- NULL
     }
     indicador <- input$indicadoresGeral_rows_selected
+    titulo <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
     
     baseFil <- baseFiltrada()
     if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(base) && !is.null(base)) {
@@ -489,6 +490,7 @@ shinyServer(function(input, output) {
       
       h <- rCharts::Highcharts$new()
       h$series(lista)
+      h$title(text = titulo)
       h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
       h$chart(zoomType = "xy", type = "bubble", width = 600);
       h$plotOptions(bubble = list(minSize = 15, maxSize = 15))
