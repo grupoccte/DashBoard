@@ -1090,8 +1090,9 @@ shinyServer(function(input, output) {
         }
       }
       
+      Media <- round(dadosEvasao(base)[indicador+nrow(listaVariaveisEvasao),]$Média,1)
       
-      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y;}!#", sep = "")
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Média do Aluno: ' + this.point.y + '<br />Média Grupo Baixo Risco: ",Media,"';}!#", sep = "")
       h <- rCharts::Highcharts$new()
       h$series(lista)
       h$title(text = titulo)
