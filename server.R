@@ -768,8 +768,10 @@ shinyServer(function(input, output) {
           }
         }
       }
-
-      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y;}!#", sep = "")
+      
+      Media <- round(dadosDesempenho(base)[indicador,]$Média,1)
+      
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Média do Aluno: ' + this.point.y + '<br />Média Grupo Satisfatório: ",Media,"';}!#", sep = "")
       h <- rCharts::Highcharts$new()
       h$series(lista)
       h$title(text = titulo)
