@@ -465,6 +465,7 @@ shinyServer(function(input, output) {
       base <- NULL
     }
     indicador <- input$indicadoresGeral_rows_selected
+    titulo <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
     
     baseFil <- baseFiltrada()
     if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(base) && !is.null(base)) {
@@ -472,9 +473,7 @@ shinyServer(function(input, output) {
       colnames(listaAlunos) <- c("Nome", "Valor")
       listaAlunos["Aluno"] <- c(1:nrow(baseFil))
       
-      min <- base[indicador,]$Min
       media <- round(base[indicador,]$Média, 1)
-      max <- base[indicador,]$Max
       
       #Tratamento de dados para o gráfico com tooltip (hitbox)
       lista <- list(
@@ -487,10 +486,11 @@ shinyServer(function(input, output) {
         lista[[1]]$data[[i]] <- list(x = listaAlunos[i,]$Aluno, y = listaAlunos[i,]$Valor, z = 1, nome = as.character(listaAlunos[i,]$Nome))
       }
       
-      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y + '<br />Min: ", min, "<br />Média: ", media, "<br />Max: ", max, "';}!#", sep = "")
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor do Aluno: ' + this.point.y + '<br />Média da Turma: ", media,"';}!#", sep = "")
       
       h <- rCharts::Highcharts$new()
       h$series(lista)
+      h$title(text = titulo)
       h$tooltip(borderWidth=0, followPointer=TRUE, followTouchMove=TRUE, shared = FALSE, formatter = hit)
       h$chart(zoomType = "xy", type = "bubble", width = 600);
       h$plotOptions(bubble = list(minSize = 15, maxSize = 15))
@@ -768,8 +768,10 @@ shinyServer(function(input, output) {
           }
         }
       }
-
-      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y;}!#", sep = "")
+      
+      Media <- round(dadosDesempenho(base)[indicador,]$Média,1)
+      
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Média do Aluno: ' + this.point.y + '<br />Média Grupo Satisfatório: ",Media,"';}!#", sep = "")
       h <- rCharts::Highcharts$new()
       h$series(lista)
       h$title(text = titulo)
@@ -1088,8 +1090,9 @@ shinyServer(function(input, output) {
         }
       }
       
+      Media <- round(dadosEvasao(base)[indicador+nrow(listaVariaveisEvasao),]$Média,1)
       
-      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Valor: ' + this.point.y;}!#", sep = "")
+      hit <- paste("#! function(){return 'Aluno: ' + this.point.nome + '<br />Média do Aluno: ' + this.point.y + '<br />Média Grupo Baixo Risco: ",Media,"';}!#", sep = "")
       h <- rCharts::Highcharts$new()
       h$series(lista)
       h$title(text = titulo)
