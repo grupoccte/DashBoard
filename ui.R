@@ -11,7 +11,7 @@ dashboardPage(
   dashboardHeader(title = "Dashboard"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Parametros",tabName = "Parametros", icon = icon("dashboard"))
+      menuItem("Parâmetros",tabName = "Parametros", icon = icon("dashboard"))
     ),
     uiOutput("radioApp"),
     uiOutput("seletorCurso"),

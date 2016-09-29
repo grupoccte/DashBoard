@@ -852,6 +852,15 @@ shinyServer(function(input, output) {
   
   #Grafico "Alunos" da analise de desempenho
   output$graficoDesempenhoAlunos <- plotly::renderPlotly({
+    construtosCheckBox <- INcheckboxesDesempenho()
+    if(!is.null(construtosCheckBox)) {
+      indSelecionados <- c()
+      for(i in construtosCheckBox) {
+        indSelecionados <- c(indSelecionados, DFconstrutosDesempenho[i,]$Varinicial:DFconstrutosDesempenho[i,]$Varfinal)
+      }
+    } else {
+      indSelecionados <- c(1:nrow(dicionarioBaseDesempenho))
+    }
     alunos <- sort(as.character(baseFiltrada()$Aluno))
     alunoSelect <- alunos[input$alunosDesempenho_rows_selected]
     aluno <- as.double(select(filter(baseFiltrada(), Aluno == alunoSelect),one_of(as.character(listaVariaveisDesempenho$Variável))))
@@ -861,7 +870,9 @@ shinyServer(function(input, output) {
     dataDesempenho <- data.frame(listaVariaveisDesempenho$N,mediaSat,aluno,listaVariaveisDesempenho$Descrição.sobre.as.variáveis)
     dataDesempenho["gap"] <- abs(dataDesempenho$mediaSat - dataDesempenho$aluno)
     colnames(dataDesempenho) <- c("Var","Satisfatorio","Freq_Aluno","Descricao","gap")
+    dataDesempenho <- dataDesempenho[indSelecionados,]
     dataDesempenho <- dataDesempenho[with(dataDesempenho, order(Var)), ]
+    
     p <- plot_ly(dataDesempenho, color = I("gray80"),marker = list(size = 13)) %>%
       add_segments(x = ~Freq_Aluno, xend = ~Satisfatorio, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
       add_markers(x = ~Freq_Aluno, y = ~paste("Ind:",Var), name = "Freq_Aluno", color = I("orange")) %>%
@@ -1203,16 +1214,27 @@ shinyServer(function(input, output) {
   
   #Grafico "Alunos" da analise de evasao
   output$graficoEvasaoAlunos <- plotly::renderPlotly({
+      construtosCheckBox <- INcheckboxesEvasao()
+      if(!is.null(construtosCheckBox)) {
+        indSelecionados <- c()
+        for(i in construtosCheckBox) {
+          indSelecionados <- c(indSelecionados, DFconstrutosEvasao[i,]$Varinicial:DFconstrutosEvasao[i,]$Varfinal)
+        }
+      } else {
+        indSelecionados <- c(1:nrow(dicionarioBaseEvasao))
+      }
+    
     alunos <- sort(as.character(baseFiltrada()$Aluno))
     alunoSelect <- alunos[input$alunosEvasao_rows_selected]
     aluno <- as.double(select(filter(baseFiltrada(), Aluno == alunoSelect),one_of(as.character(listaVariaveisEvasao$ID))))
     mediaBaixoRisco <- as.double(colMeans(select(filter(baseFiltrada(), EVASAO == "0"),one_of(as.character(listaVariaveisEvasao$ID)))))
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
-    # no eixo y ta aparecendo o indicador de 2 em 2
     listaVariaveisEvasao["N"] <- c(1:nrow(listaVariaveisEvasao))
     dataEvasao <- data.frame(listaVariaveisEvasao$N,mediaBaixoRisco,aluno,listaVariaveisEvasao$INDICADOR)
     colnames(dataEvasao) <- c("Var","Baixo_Risco","Freq_Aluno","Descricao")
     dataEvasao["gap"] <- abs(dataEvasao$Freq_Aluno - dataEvasao$Baixo_Risco)
+    print(indSelecionados)
+    dataEvasao <- dataEvasao[indSelecionados,]
     dataEvasao <- dataEvasao[with(dataEvasao, order(Var)), ]
     p <- plot_ly(dataEvasao, color = I("gray80"),marker = list(size = 13)) %>%
       add_segments(x = ~Freq_Aluno, xend = ~Baixo_Risco, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
