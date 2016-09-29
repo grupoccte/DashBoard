@@ -531,15 +531,43 @@ shinyServer(function(input, output) {
   #Analise de desempenho
   
   INcheckboxesDesempenho <- reactive({
-    checkboxes <- grep("constdesemp_", names(input))
-    qtd <- length(checkboxes)
-    construtos <- c()
-    for(i in 1:qtd) {
-      if(!is.null(input[[c(paste("constdesemp_", i, sep = ""))]]) && input[[c(paste("constdesemp_", i, sep = ""))]] == TRUE) {
-        construtos <- c(construtos, i)
+    if(!is.null(input$aplicacao) && !is.null(input$tabDesempenho) && input$tabDesempenho != 2) {
+      if(input$tabDesempenho == 1) {
+        if(input$consdesger == 0) {
+          return(c())
+        } else {
+          return(input$consdesger)
+        }
+      } else {
+        if(input$consdesalu == 0) {
+          return(c())
+        } else {
+          return(input$consdesalu)
+        }
       }
+    } else {
+      return(c())
     }
-    construtos
+  })
+  
+  #Seletor de construtos de desempenho, aba geral
+  output$seletorConsDesGer <- renderUI({
+    construtos <- c("Todos", as.character(DFconstrutosDesempenho$Construto))
+    construtosValor <- list()
+    for(i in 1:length(construtos)) {
+      construtosValor [[ construtos[i] ]] <- i - 1
+    }
+    selectInput("consdesger", "Construto", construtosValor)
+  })
+  
+  #Seletor de construtos de desempenho, aba aluno
+  output$seletorConsDesAlu <- renderUI({
+    construtos <- c("Todos", as.character(DFconstrutosDesempenho$Construto))
+    construtosValor <- list()
+    for(i in 1:length(construtos)) {
+      construtosValor [[ construtos[i] ]] <- i - 1
+    }
+    selectInput("consdesalu", "Construto", construtosValor)
   })
 
   #retorna tabela indicadores Desempenho
@@ -850,15 +878,43 @@ shinyServer(function(input, output) {
   #Analise de evasao
   
   INcheckboxesEvasao <- reactive({
-    checkboxes <- grep("constevas_", names(input))
-    qtd <- length(checkboxes)
-    construtos <- c()
-    for(i in 1:qtd) {
-      if(!is.null(input[[c(paste("constevas_", i, sep = ""))]]) && input[[c(paste("constevas_", i, sep = ""))]] == TRUE) {
-        construtos <- c(construtos, i)
+    if(!is.null(input$aplicacao) && !is.null(input$tabEvasao) && input$tabEvasao != 2) {
+      if(input$tabEvasao == 1) {
+        if(input$consevager == 0) {
+          return(c())
+        } else {
+          return(input$consevager)
+        }
+      } else {
+        if(input$consevaalu == 0) {
+          return(c())
+        } else {
+          return(input$consevaalu)
+        }
       }
+    } else {
+      return(c())
     }
-    construtos
+  })
+  
+  #Seletor de construtos de evasão, aba geral
+  output$seletorConsEvaGer <- renderUI({
+    construtos <- c("Todos", as.character(DFconstrutosEvasao$Construto))
+    construtosValor <- list()
+    for(i in 1:length(construtos)) {
+      construtosValor [[ construtos[i] ]] <- i - 1
+    }
+    selectInput("consevager", "Construto", construtosValor)
+  })
+  
+  #Seletor de construtos de evasão, aba aluno
+  output$seletorConsEvaAlu <- renderUI({
+    construtos <- c("Todos", as.character(DFconstrutosEvasao$Construto))
+    construtosValor <- list()
+    for(i in 1:length(construtos)) {
+      construtosValor [[ construtos[i] ]] <- i - 1
+    }
+    selectInput("consevaalu", "Construto", construtosValor)
   })
   
   #retorna tabela de indicadores evasao

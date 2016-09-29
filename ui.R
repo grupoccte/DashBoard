@@ -68,8 +68,7 @@ dashboardPage(
                            id="tabDesempenho",side = "left", width = 12,
                            selected = "1",
                            tabPanel("Geral",value= "1", 
-                                    showOutput("graficoDesempenhoGeral", "nvd3"),
-                                    uiOutput("construtosDesempenho")
+                                    showOutput("graficoDesempenhoGeral", "nvd3")
                                     ),
                            tabPanel("Indicadores",value="2" ,
                                     conditionalPanel("input.indicadoresDesempenho_rows_selected == 0", h5("Nenhum indicador selecionado")),
@@ -87,6 +86,8 @@ dashboardPage(
                          width = 4,
                          box(
                            width = 12, title = "Indicadores",status = "primary",solidHeader = TRUE ,collapsible = TRUE,
+                           conditionalPanel("input.tabDesempenho == '1'", uiOutput("seletorConsDesGer")),
+                           conditionalPanel("input.tabDesempenho == '3'", uiOutput("seletorConsDesAlu")),
                            dataTableOutput("indicadoresDesempenho")
                          ),
                          box(
@@ -107,8 +108,7 @@ dashboardPage(
                            id="tabEvasao",side = "left", width = 12,
                            selected = "1",
                            tabPanel("Geral",value = "1",
-                                    showOutput("graficoEvasao", "nvd3"),
-                                    uiOutput("construtosEvasao")
+                                    showOutput("graficoEvasao", "nvd3")
                            ),
                            tabPanel("Indicadores",value = "2" ,
                                     conditionalPanel("input.indicadoresEvasao_rows_selected == 0", h5("Nenhum indicador selecionado")),
@@ -125,6 +125,8 @@ dashboardPage(
                          width = 4,
                          box(
                            width = 12, title = "Indicadores",status = "primary",solidHeader = TRUE ,collapsible = TRUE,
+                           conditionalPanel("input.tabEvasao == '1'", uiOutput("seletorConsEvaGer")),
+                           conditionalPanel("input.tabEvasao == '3'", uiOutput("seletorConsEvaAlu")),
                            dataTableOutput("indicadoresEvasao")
                          ),
                          box(
