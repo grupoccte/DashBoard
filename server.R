@@ -510,21 +510,21 @@ shinyServer(function(input, output) {
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
     listaVariaveisGeral["N"] <- c(1:nrow(listaVariaveisGeral))
     dataGeral <- data.frame(listaVariaveisGeral$N,aluno,mediaGeral,listaVariaveisGeral$Descrição.sobre.as.variáveis)
-    colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma","Descricao")
+    dataGeral["gap"] <- abs(dataGeral$aluno - dataGeral$mediaGeral)
+    colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma","Descricao","gap")
     dataGeral <- dataGeral[with(dataGeral, order(Var)), ]
-    g <- gather(dataGeral, var, value, Freq_Aluno, Media_Turma) %>%
-      plot_ly(x = value, y = paste("Ind:",Var),mode = "markers",
-              color = var, colors = c("orange", "blue"),marker = list(size = 13)) %>%
-      add_trace(x = value, y = paste("Ind:",Var),mode = "lines",
-                group = Var, showlegend = F, line = list(color = "gray")) %>%
+    print(head(dataGeral))
+    p <- plot_ly(dataGeral, color = I("gray80"),marker = list(size = 13)) %>%
+      add_segments(x = ~Freq_Aluno, xend = ~Media_Turma, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
+      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:",Var), name = "Freq_Aluno", color = I("orange")) %>%
+      add_markers(x = ~Media_Turma, y = ~paste("Ind:",Var), name = "Media_Turma", color = I("blue")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
         xaxis = list(title = "Frequencia por Indicador"),
-        yaxis = list(title = "Indicador")
+        yaxis = list(title = "Indicador"),
+        margin = list(l = 65)
       )
-    g
-    
-    
+    p
   })
   
   
@@ -831,19 +831,20 @@ shinyServer(function(input, output) {
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
     listaVariaveisDesempenho["N"] <- c(1:nrow(listaVariaveisDesempenho))
     dataDesempenho <- data.frame(listaVariaveisDesempenho$N,mediaSat,aluno,listaVariaveisDesempenho$Descrição.sobre.as.variáveis)
-    colnames(dataDesempenho) <- c("Var","Satisfatorio","Freq_Aluno","Descricao")
+    dataDesempenho["gap"] <- abs(dataDesempenho$mediaSat - dataDesempenho$aluno)
+    colnames(dataDesempenho) <- c("Var","Satisfatorio","Freq_Aluno","Descricao","gap")
     dataDesempenho <- dataDesempenho[with(dataDesempenho, order(Var)), ]
-    g <- gather(dataDesempenho, var, value, Freq_Aluno, Satisfatorio) %>%
-      plot_ly(x = value, y = paste("Ind:",Var), mode = "markers",
-              color = var, colors = c("orange", "dark green"),marker = list(size = 13)) %>%
-      add_trace(x = value, y = paste("Ind:",Var), mode = "lines",
-                group = Var, showlegend = F, line = list(color = "gray")) %>%
+    p <- plot_ly(dataDesempenho, color = I("gray80"),marker = list(size = 13)) %>%
+      add_segments(x = ~Freq_Aluno, xend = ~Satisfatorio, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
+      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:",Var), name = "Freq_Aluno", color = I("orange")) %>%
+      add_markers(x = ~Satisfatorio, y = ~paste("Ind:",Var), name = "Satisfatório", color = I("dark green")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
         xaxis = list(title = "Frequencia por Indicador"),
-        yaxis = list(title = "Indicador")
+        yaxis = list(title = "Indicador"),
+        margin = list(l = 65)
       )
-    g
+    p
     
   })
   
@@ -1155,18 +1156,19 @@ shinyServer(function(input, output) {
     listaVariaveisEvasao["N"] <- c(1:nrow(listaVariaveisEvasao))
     dataEvasao <- data.frame(listaVariaveisEvasao$N,mediaBaixoRisco,aluno,listaVariaveisEvasao$INDICADOR)
     colnames(dataEvasao) <- c("Var","Baixo_Risco","Freq_Aluno","Descricao")
+    dataEvasao["gap"] <- abs(dataEvasao$Freq_Aluno - dataEvasao$Baixo_Risco)
     dataEvasao <- dataEvasao[with(dataEvasao, order(Var)), ]
-    g <- gather(dataEvasao, var, value, Freq_Aluno, Baixo_Risco) %>%
-      plot_ly(x = value, y = paste("Ind:",Var), mode = "markers",
-              color = var, colors = c("orange", "dark green"),marker = list(size = 13)) %>%
-      add_trace(x = value, y = paste("Ind:",Var), mode = "lines",
-                group = Var, showlegend = F, line = list(color = "gray")) %>%
+    p <- plot_ly(dataEvasao, color = I("gray80"),marker = list(size = 13)) %>%
+      add_segments(x = ~Freq_Aluno, xend = ~Baixo_Risco, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
+      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:",Var), name = "Freq_Aluno", color = I("orange")) %>%
+      add_markers(x = ~Baixo_Risco, y = ~paste("Ind:",Var), name = "Baixo_Risco", color = I("dark green")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
         xaxis = list(title = "Frequencia por Indicador"),
-        yaxis = list(title = "Indicador")
+        yaxis = list(title = "Indicador"),
+        margin = list(l = 65)
       )
-    g
+    p
   })
   
 })
