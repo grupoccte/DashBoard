@@ -15,7 +15,7 @@ baseEvasao <- read.csv2(file = "data/BaseEvasão/base_evasao.csv", encoding = "l
 dicionarioBaseEvasao <- read.csv(file = "data/BaseEvasão/dicionario_dadosEvasao.csv", encoding = "UTF-8")#Leitura base de dados desempenho
 dicionarioBaseEvasao <- dicionarioBaseEvasao[with(dicionarioBaseEvasao, order(CONSTRUTOS)), ] #ordenação pela coluna de construto para facilitar os checkboxes dinâmicos sem repetição
 rownames(dicionarioBaseEvasao) <- NULL #Correção para o número das linhas após ordenação
-baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="latin1", dec=",")
+baseDesempenho <- baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8", dec=",")
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv", encoding = "latin1")
 listaVariaveisDesempenho <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
 listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGeral.csv", encoding = "UTF-8")
