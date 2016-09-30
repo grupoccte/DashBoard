@@ -513,7 +513,6 @@ shinyServer(function(input, output) {
     dataGeral["gap"] <- abs(dataGeral$aluno - dataGeral$mediaGeral)
     colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma","Descricao","gap")
     dataGeral <- dataGeral[with(dataGeral, order(Var)), ]
-    print(head(dataGeral))
     p <- plot_ly(dataGeral, color = I("gray80"),marker = list(size = 13)) %>%
       add_segments(x = ~Freq_Aluno, xend = ~Media_Turma, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
       add_markers(x = ~Freq_Aluno, y = ~paste("Ind:",Var), name = "Freq_Aluno", color = I("orange")) %>%
@@ -785,14 +784,18 @@ shinyServer(function(input, output) {
         )
       )
       if(nrow(alunos) > 0) {
+        j <- 1
         for(i in 1:nrow(alunos)) {
           if(alunos[i,]$Desempenho == 1) { #insatisfatório
-            lista[[1]]$data[[i]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+            lista[[1]]$data[[j]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+            j <- j + 1
           }
         }
+        k <- 1
         for(i in 1:nrow(alunos)) {
-          if(alunos[i,]$Desempenho == 0) { #insatisfatório
-            lista[[2]]$data[[i]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+          if(alunos[i,]$Desempenho == 0) { #satisfatório
+            lista[[2]]$data[[k]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+            k <- k + 1
           }
         }
       }
@@ -811,43 +814,6 @@ shinyServer(function(input, output) {
     } else {
       hPlot(b ~ a, data = data.frame(a = c(0), b = c(0)), type = "bubble", title = "", size = 1)
     }
-  })
-  
-  #Checkboxes p/ construtos de desempenho
-  
-  output$construtosDesempenho <- renderUI({
-    colunas <- list() #lista de colunas
-    colunas[[1]] <- list() #cada coluna tem uma lista de checkboxes
-    colunas[[2]] <- list()
-    colunas[[3]] <- list()
-    totalconstrutos <- nrow(DFconstrutosDesempenho)
-    construtosporcol <- round(totalconstrutos / 3, 0)
-    
-    colat <- 1
-    nsel <- 1
-    for(i in 1:nrow(DFconstrutosDesempenho)) {
-      colunas[[colat]][[nsel]] <- checkboxInput(paste("constdesemp_", i, sep = ""), DFconstrutosDesempenho[i,]$Construto, FALSE)
-      nsel <- nsel + 1
-      if(nsel > construtosporcol) {
-        colat <- colat + 1
-        nsel <- 1
-      }
-    }
-    
-    fluidRow(
-      column(
-        width=4,
-        colunas[[1]]
-      ),
-      column(
-        width=4,
-        colunas[[2]]
-      ),
-      column(
-        width=4,
-        colunas[[3]]
-      )
-    )
   })
   
   #Grafico "Alunos" da analise de desempenho
@@ -1146,14 +1112,18 @@ shinyServer(function(input, output) {
         )
       )
       if(nrow(alunos) > 0) {
+        j <- 1
         for(i in 1:nrow(alunos)) {
           if(alunos[i,]$Evasao == 1) { #Alto risco
-            lista[[1]]$data[[i]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+            lista[[1]]$data[[j]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+            j <- j + 1
           }
         }
+        k <- 1
         for(i in 1:nrow(alunos)) {
           if(alunos[i,]$Evasao == 0) { #Baixo risco
-            lista[[2]]$data[[i]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+            lista[[2]]$data[[k]] <- list(x = alunos[i,]$Aluno, y = alunos[i,]$Valor, z = alunos[i,]$Probabilidade, nome = as.character(alunos[i,]$Nome))
+            k <- k + 1
           }
         }
       }
@@ -1233,7 +1203,6 @@ shinyServer(function(input, output) {
     dataEvasao <- data.frame(listaVariaveisEvasao$N,mediaBaixoRisco,aluno,listaVariaveisEvasao$INDICADOR)
     colnames(dataEvasao) <- c("Var","Baixo_Risco","Freq_Aluno","Descricao")
     dataEvasao["gap"] <- abs(dataEvasao$Freq_Aluno - dataEvasao$Baixo_Risco)
-    print(indSelecionados)
     dataEvasao <- dataEvasao[indSelecionados,]
     dataEvasao <- dataEvasao[with(dataEvasao, order(Var)), ]
     p <- plot_ly(dataEvasao, color = I("gray80"),marker = list(size = 13)) %>%
