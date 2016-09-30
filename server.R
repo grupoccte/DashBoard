@@ -450,6 +450,7 @@ shinyServer(function(input, output) {
     if(!is.null(base) && input$aplicacao == 1) {
       g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], title = "Média dos indicadores geral", type = 'multiBarHorizontalChart', width = 600)
       g$chart(showControls = F)
+      g$chart(tooltipContent = "#! function(key, x, y){return '<h3>Indicador ' + x  + ' - Média: </h3><h4><p>' + y + '</p></h4>'} !#")
       g
     } else {
       nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
@@ -749,6 +750,7 @@ shinyServer(function(input, output) {
     if(!is.null(base)) {
       g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], group = 'Desempenho', type = 'multiBarHorizontalChart', width = 600)
       g$chart(color = c('green', 'red'))
+      g$chart(tooltipContent = "#! function(key, x, y){return '<h3>Indicador ' + x  + ' (' + key  + ') - Média: </h3><h4><p>' + y + '</p></h4>'} !#")
       #g$chart(controlLabels = list(grouped = "test1", stacked = "test2"))
       g
     } else {
@@ -1078,6 +1080,7 @@ shinyServer(function(input, output) {
       indSelecionados <- sort(indSelecionados)
       g <- nPlot(Média ~ Indicador, data = base[indSelecionados,], group = "RiscoEvasao", type = 'multiBarHorizontalChart', width = 600)
       g$chart(color = c('red', 'green'))
+      g$chart(tooltipContent = "#! function(key, x, y){return '<h3>Indicador ' + x  + ' (' + key  + ') - Média: </h3><h4><p>' + y + '</p></h4>'} !#")
       g
     } else {
       nPlot(a ~ b, data = data.frame(a = c(0), b = c(0)), type = 'multiBarHorizontalChart', width = 600)
