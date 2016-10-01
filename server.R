@@ -394,7 +394,7 @@ shinyServer(function(input, output) {
         rownames = FALSE,
         options = list(
           paging = FALSE,
-          searching = FALSE,
+          searching = TRUE,
           info = FALSE,
           scrollY = '300px'
         )
@@ -405,7 +405,7 @@ shinyServer(function(input, output) {
         rownames = FALSE,
         options = list(
           paging = FALSE,
-          searching = FALSE,
+          searching = TRUE,
           info = FALSE,
           scrollY = '300px'
         ),
@@ -426,7 +426,7 @@ shinyServer(function(input, output) {
         rownames = FALSE,
         options = list(
           paging = FALSE,
-          searching = FALSE,
+          searching = TRUE,
           info = FALSE,
           scrollY = '300px'
         )
