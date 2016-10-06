@@ -275,7 +275,7 @@ calcConstrutosEvasao <- function(linhas, construtos) {
 shinyServer(function(input, output) {
   #Radio da aplicação
   output$radioApp <- renderUI({
-    radioButtons("aplicacao","Seleciona a aplicação:", 
+    radioButtons("aplicacao","Selecione o Módulo:", 
                  choices =c("Visão geral dos dados" = 1,
                             "Análise de Desempenho" = 2,
                             "Análise de Evasão" = 3),selected = 1);
@@ -515,9 +515,9 @@ shinyServer(function(input, output) {
     colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma","Descricao","gap")
     dataGeral <- dataGeral[with(dataGeral, order(Var)), ]
     p <- plot_ly(dataGeral, color = I("gray80"),marker = list(size = 13)) %>%
-      add_segments(x = ~Freq_Aluno, xend = ~Media_Turma, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
-      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:",Var), name = "Freq_Aluno", color = I("orange")) %>%
-      add_markers(x = ~Media_Turma, y = ~paste("Ind:",Var), name = "Media_Turma", color = I("blue")) %>%
+      add_segments(x = ~Freq_Aluno, xend = ~Media_Turma, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), yend = ~paste("Ind:", str_pad(Var, 2, pad = "0")), showlegend = FALSE) %>%
+      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), name = "Freq_Aluno", color = I("orange")) %>%
+      add_markers(x = ~Media_Turma, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), name = "Media_Turma", color = I("blue")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
         xaxis = list(title = "Frequencia por Indicador"),
@@ -531,14 +531,21 @@ shinyServer(function(input, output) {
   #Analise de desempenho
   
   INcheckboxesDesempenho <- reactive({
-    if(!is.null(input$aplicacao) && !is.null(input$tabDesempenho) && input$tabDesempenho != 2) {
+    if(!is.null(input$aplicacao) && !is.null(input$tabDesempenho)) {
       if(input$tabDesempenho == 1) {
         if(input$consdesger == 0) {
           return(c())
         } else {
           return(input$consdesger)
         }
-      } else {
+      } else if(input$tabDesempenho == 2) {
+        if(input$consdesind == 0) {
+          return(c())
+        } else {
+          return(input$consdesind)
+        }
+      } 
+      else {
         if(input$consdesalu == 0) {
           return(c())
         } else {
@@ -558,6 +565,16 @@ shinyServer(function(input, output) {
       construtosValor [[ construtos[i] ]] <- i - 1
     }
     selectInput("consdesger", "Construto", construtosValor)
+  })
+  
+  #Seletor de construtos de desempenho, aba indicadores
+  output$seletorConsDesInd <- renderUI({
+    construtos <- c("Todos", as.character(DFconstrutosDesempenho$Construto))
+    construtosValor <- list()
+    for(i in 1:length(construtos)) {
+      construtosValor [[ construtos[i] ]] <- i - 1
+    }
+    selectInput("consdesind", "Construto", construtosValor)
   })
   
   #Seletor de construtos de desempenho, aba aluno
@@ -842,9 +859,9 @@ shinyServer(function(input, output) {
     dataDesempenho <- dataDesempenho[with(dataDesempenho, order(Var)), ]
     
     p <- plot_ly(dataDesempenho, color = I("gray80"),marker = list(size = 13)) %>%
-      add_segments(x = ~Freq_Aluno, xend = ~Satisfatorio, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
-      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:",Var), name = "Freq_Aluno", color = I("orange")) %>%
-      add_markers(x = ~Satisfatorio, y = ~paste("Ind:",Var), name = "Satisfatório", color = I("dark green")) %>%
+      add_segments(x = ~Freq_Aluno, xend = ~Satisfatorio, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), yend = ~paste("Ind:", str_pad(Var, 2, pad = "0")), showlegend = FALSE) %>%
+      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), name = "Freq_Aluno", color = I("orange")) %>%
+      add_markers(x = ~Satisfatorio, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), name = "Satisfatório", color = I("dark green")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
         xaxis = list(title = "Frequencia por Indicador"),
@@ -858,12 +875,18 @@ shinyServer(function(input, output) {
   #Analise de evasao
   
   INcheckboxesEvasao <- reactive({
-    if(!is.null(input$aplicacao) && !is.null(input$tabEvasao) && input$tabEvasao != 2) {
+    if(!is.null(input$aplicacao) && !is.null(input$tabEvasao)) {
       if(input$tabEvasao == 1) {
         if(input$consevager == 0) {
           return(c())
         } else {
           return(input$consevager)
+        }
+      } else if(input$tabEvasao == 2) {
+        if(input$consevaind == 0) {
+          return(c())
+        } else {
+          return(input$consevaind)
         }
       } else {
         if(input$consevaalu == 0) {
@@ -885,6 +908,16 @@ shinyServer(function(input, output) {
       construtosValor [[ construtos[i] ]] <- i - 1
     }
     selectInput("consevager", "Construto", construtosValor)
+  })
+  
+  #Seletor de construtos de evasão, aba indicadores
+  output$seletorConsEvaInd <- renderUI({
+    construtos <- c("Todos", as.character(DFconstrutosEvasao$Construto))
+    construtosValor <- list()
+    for(i in 1:length(construtos)) {
+      construtosValor [[ construtos[i] ]] <- i - 1
+    }
+    selectInput("consevaind", "Construto", construtosValor)
   })
   
   #Seletor de construtos de evasão, aba aluno
@@ -1208,10 +1241,11 @@ shinyServer(function(input, output) {
     dataEvasao["gap"] <- abs(dataEvasao$Freq_Aluno - dataEvasao$Baixo_Risco)
     dataEvasao <- dataEvasao[indSelecionados,]
     dataEvasao <- dataEvasao[with(dataEvasao, order(Var)), ]
+    print(head(dataEvasao))
     p <- plot_ly(dataEvasao, color = I("gray80"),marker = list(size = 13)) %>%
-      add_segments(x = ~Freq_Aluno, xend = ~Baixo_Risco, y = ~paste("Ind:",Var), yend = ~paste("Ind:",Var), showlegend = FALSE) %>%
-      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:",Var), name = "Freq_Aluno", color = I("orange")) %>%
-      add_markers(x = ~Baixo_Risco, y = ~paste("Ind:",Var), name = "Baixo_Risco", color = I("dark green")) %>%
+      add_segments(x = ~Freq_Aluno, xend = ~Baixo_Risco, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), yend = ~paste("Ind:", str_pad(Var, 2, pad = "0")), showlegend = FALSE) %>%
+      add_markers(x = ~Freq_Aluno, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), name = "Freq_Aluno", color = I("orange")) %>%
+      add_markers(x = ~Baixo_Risco, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), name = "Baixo_Risco", color = I("dark green")) %>%
       layout(
         title = paste("Aluno:", alunoSelect),
         xaxis = list(title = "Frequencia por Indicador"),

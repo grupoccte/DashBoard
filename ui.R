@@ -2,6 +2,7 @@ library(shiny)
 library(shinydashboard)
 library(DT)
 library(dplyr)
+library(stringr)
 require(devtools)
 require(rCharts)
 require(reshape2)
@@ -87,6 +88,7 @@ dashboardPage(
                          box(
                            width = 12, title = "Indicadores",status = "primary",solidHeader = TRUE ,collapsible = TRUE,
                            conditionalPanel("input.tabDesempenho == '1'", uiOutput("seletorConsDesGer")),
+                           conditionalPanel("input.tabDesempenho == '2'", uiOutput("seletorConsDesInd")),
                            conditionalPanel("input.tabDesempenho == '3'", uiOutput("seletorConsDesAlu")),
                            dataTableOutput("indicadoresDesempenho")
                          ),
@@ -126,6 +128,7 @@ dashboardPage(
                          box(
                            width = 12, title = "Indicadores",status = "primary",solidHeader = TRUE ,collapsible = TRUE,
                            conditionalPanel("input.tabEvasao == '1'", uiOutput("seletorConsEvaGer")),
+                           conditionalPanel("input.tabEvasao == '2'", uiOutput("seletorConsEvaInd")),
                            conditionalPanel("input.tabEvasao == '3'", uiOutput("seletorConsEvaAlu")),
                            dataTableOutput("indicadoresEvasao")
                          ),
