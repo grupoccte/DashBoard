@@ -20,6 +20,20 @@ dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dad
 listaVariaveisDesempenho <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
 listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGeral.csv", encoding = "UTF-8")
 listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
+
+load("data/BaseDesempenho/modeloDesempenho.rda")
+load("data/BaseEvasão/reglog_DT.rda")
+
+classificacaoProbDesempenho <- predict(modelo,newdata=baseDesempenho,type="response")
+classificacaoBinariaDesempenho <- ifelse(classificacaoProb > 0.5,1,0)
+baseDesempenho["PROBABILIDADE"] <- classificacaoProbDesempenho
+baseDesempenho["DESEMPENHO_BINARIO"] <- classificacaoBinariaDesempenho
+
+classificacaoProbEvasao <- predict(modelo,newdata=baseEvasao,type="response")
+classificacaoBinariaEvasao <- ifelse(classificacaoProb > 0.5,1,0)
+baseEvasao["PROBABILIDADE"] <- classificacaoProbEvasao
+baseEvasao["EVASAO"] <- classificacaoBinariaEvasao
+
 #::Calculo de médias, máximos e mínimos para análise geral
 
 visGeralIndicadores <- function(base) {
