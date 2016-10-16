@@ -21,14 +21,14 @@ listaVariaveisDesempenho <- data.frame(dicionarioBaseDesempenho[,c("Variável","
 listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGeral.csv", encoding = "UTF-8")
 listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
 
-load("data/BaseDesempenho/modeloDesempenho.rda")
+load("modelos/desempenho/modeloDesempenhoRegLog.rda")
 
 classificacaoProbDesempenho <- predict(modelo,newdata=baseDesempenho,type="response")
 classificacaoBinariaDesempenho <- ifelse(classificacaoProbDesempenho > 0.5,1,0)
 baseDesempenho["PROBABILIDADE"] <- classificacaoProbDesempenho
 baseDesempenho["DESEMPENHO_BINARIO"] <- classificacaoBinariaDesempenho
 
-load("data/BaseEvasão/reglog_DT.rda")
+load("modelos/evasao/modeloEvasaoRegLog.rda")
 
 classificacaoProbEvasao <- predict(modelo,newdata=baseEvasao,type="response")
 classificacaoBinariaEvasao <- ifelse(classificacaoProbEvasao > 0.5,1,0)
