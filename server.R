@@ -25,15 +25,15 @@ load("modelos/desempenho/modeloDesempenhoRegLog.rda")
 
 classificacaoProbDesempenho <- predict(modelo,newdata=baseDesempenho,type="response")
 classificacaoBinariaDesempenho <- ifelse(classificacaoProbDesempenho > 0.5,1,0)
-baseDesempenho["PROBABILIDADE"] <- classificacaoProbDesempenho
-baseDesempenho["DESEMPENHO_BINARIO"] <- classificacaoBinariaDesempenho
+baseDesempenho$PROBABILIDADE <- classificacaoProbDesempenho
+baseDesempenho$DESEMPENHO_BINARIO <- classificacaoBinariaDesempenho
 
 load("modelos/evasao/modeloEvasaoRegLog.rda")
 
 classificacaoProbEvasao <- predict(modelo,newdata=baseEvasao,type="response")
 classificacaoBinariaEvasao <- ifelse(classificacaoProbEvasao > 0.5,1,0)
-baseEvasao["PROBABILIDADE"] <- classificacaoProbEvasao
-baseEvasao["EVASAO"] <- classificacaoBinariaEvasao
+baseEvasao$PROBABILIDADE <- classificacaoProbEvasao
+baseEvasao$EVASAO <- classificacaoBinariaEvasao
 
 #::Calculo de médias, máximos e mínimos para análise geral
 
