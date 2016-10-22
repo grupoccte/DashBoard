@@ -4,7 +4,7 @@
 
 * Shiny-server (versão 1.4 ou superior é recomendada)
 
-As seguintes bibliotecas são necessárias
+As seguintes bibliotecas também são necessárias
 
 * ShinyDashboard
 * DT
@@ -15,27 +15,34 @@ As seguintes bibliotecas são necessárias
 * reshape2
 * Plotly
 
-##Instalação com Docker (Linux)
+Detalhes sobre a instalação do shiny-server podem ser encontrados no [site](https://www.rstudio.com/products/shiny/download-server/) oficial.
 
-Além do Docker são necessários:
+Obs: O shiny-server é disponibilizado apenas para o sistema operacional linux.
 
-* GIT
-* Docker-compose
+##Instalação com Docker
 
-Tendo isto instalado basta executar o script de instalação:
+Além do Docker também é necessária a instalação do docker-compose em versão superior à 1.7
+
+Salve o seguinte conteudo em um arquivo chamado "docker-compose.yml"
 
 ```
-sudo instalacao.sh
+version: '2'
+services:
+  shinyserver:
+    image: tafm/dashboard
+    command: bash -c "shiny-server \"/srv/shiny-server/shiny-server.conf\""
+    ports:
+      - "80:3838"
 ```
 
-O script irá baixar o projeto no github, criar uma imagem com o shiny-server e as bibliotecas necessárias executando após a conclusão na porta 80.
-Para execuções futuras basta abrir a linha de comando e navegar até a pasta com os arquivos do docker e executar o seguinte comando para subir novamente todos os containers:
+Agora é necessário navegar até a pasta onde se encontra o arquivo do docker-compose e executar:
 
 ```
 Docker-compose up -d
 ```
+Caso seja a primeira execução o composer irá baixar a imagem configurada com a aplicação. Concluído o processo acesse http://localhost e a aplicação deverá estar disponível.
 
-E para parar todos os serviços:
+Para parar todos os serviços, vá até a pasta e digite o comando:
 
 ```
 Docker-compose stop
