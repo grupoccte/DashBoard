@@ -30,7 +30,7 @@ version: '2'
 services:
   shinyserver:
     image: tafm/dashboard
-    command: bash -c "shiny-server \"/srv/shiny-server/shiny-server.conf\""
+    command: shiny-server "/srv/shiny-server/shiny-server.conf"
     ports:
       - "80:3838"
 ```
