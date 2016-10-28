@@ -38,13 +38,13 @@ services:
 Agora é necessário navegar até a pasta onde se encontra o arquivo do docker-compose e executar:
 
 ```
-Docker-compose up -d
+docker-compose up -d
 ```
 Caso seja a primeira execução o composer irá baixar a imagem configurada com a aplicação. Concluído o processo acesse http://localhost e a aplicação deverá estar disponível.
 
 Para parar todos os serviços, vá até a pasta e digite o comando:
 
 ```
-Docker-compose stop
+docker-compose stop
 ```
 
