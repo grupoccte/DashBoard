@@ -7,19 +7,21 @@ library(tidyr)
 require(devtools)
 require(rCharts)
 
-
-#Leitura base de dados gerais
+#Leitura de bases
 baseGeral <- read.csv2(file = "data/BaseGeral/base_geral.csv", encoding = "latin1")
-#Leitura base de dados evasao
+baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding = "UTF-8")
 baseEvasao <- read.csv2(file = "data/BaseEvasão/base_evasao.csv", encoding = "latin1")
-dicionarioBaseEvasao <- read.csv(file = "data/BaseEvasão/dicionario_dadosEvasao.csv", encoding = "UTF-8")#Leitura base de dados desempenho
-dicionarioBaseEvasao <- dicionarioBaseEvasao[with(dicionarioBaseEvasao, order(CONSTRUTOS)), ] #ordenação pela coluna de construto para facilitar os checkboxes dinâmicos sem repetição
-rownames(dicionarioBaseEvasao) <- NULL #Correção para o número das linhas após ordenação
-baseDesempenho <- baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding ="UTF-8", dec=",")
-dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_dadosDesempenho.csv", encoding = "latin1")
-listaVariaveisDesempenho <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição.sobre.as.variáveis")])
-listaVariaveisGeral <- read.csv(file = "data/BaseGeral/Novo_dicionario_dadosGeral.csv", encoding = "UTF-8")
-listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("ID","INDICADOR")])
+
+dicionarioBaseGeral <- read.csv2(file = "data/BaseGeral/dicionario_geral.csv", encoding = "UTF-8")
+dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_desempenho.csv", encoding = "UTF-8")
+dicionarioBaseEvasao <- read.csv2(file = "data/BaseEvasão/dicionario_evasao.csv", encoding = "UTF-8")
+dicionarioBaseEvasao$Variável <- tolower(dicionarioBaseEvasao$Variável)
+
+listaVariaveisGeral <- data.frame(dicionarioBaseGeral[,c("Variável","Descrição")])
+listaVariaveisDesempenho <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição")])
+listaVariaveisEvasao <- data.frame(dicionarioBaseEvasao[,c("Variável","Descrição")])
+
+#Classificação
 
 load("modelos/desempenho/modeloDesempenhoRegLog.rda")
 
@@ -29,6 +31,8 @@ baseDesempenho$PROBABILIDADE <- classificacaoProbDesempenho
 baseDesempenho$DESEMPENHO_BINARIO <- classificacaoBinariaDesempenho
 
 load("modelos/evasao/modeloEvasaoRegLog.rda")
+
+colnames(baseEvasao) <- c(colnames(baseEvasao)[1:4], tolower(colnames(baseEvasao)[5:ncol(baseEvasao)]))
 
 classificacaoProbEvasao <- predict(modelo,newdata=baseEvasao,type="response")
 classificacaoBinariaEvasao <- ifelse(classificacaoProbEvasao > 0.5,1,0)
@@ -178,9 +182,9 @@ calcConstrutosDesempenho <- function(linhas, construtos) {
 
 dadosEvasao <- function(base) {
   if(!is.null(base)) {
-    colVariaveisBaixoRisco <- select(filter(base, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$ID)))
-    colVariaveisAltoRisco <- select(filter(base, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$ID)))
-    
+    colVariaveisBaixoRisco <- select(filter(base, EVASAO == "1"), one_of(as.character(dicionarioBaseEvasao$Variável)))
+    colVariaveisAltoRisco <- select(filter(base, EVASAO == "0"), one_of(as.character(dicionarioBaseEvasao$Variável)))
+
     #MIN
     if(nrow(colVariaveisBaixoRisco) != 0) {
       minBaixo <- sapply(colVariaveisBaixoRisco, min)
@@ -255,7 +259,7 @@ Varinicial <- c()
 Varfinal <- c()
 
 for(i in 1:nrow(dicionarioBaseEvasao)) {
-  atual <- as.character(dicionarioBaseEvasao[i,"CONSTRUTOS"])
+  atual <- as.character(dicionarioBaseEvasao[i,"Construto"])
   if(atual != "" && atual != anterior) {
     Construto <- c(Construto, atual)
     anterior = atual
@@ -365,7 +369,7 @@ shinyServer(function(input, output) {
   
   #retorna tabela indicadores gerais
   output$indicadoresGeral <- renderDataTable({
-    listaVariaveis <- data.frame(listaVariaveisGeral$Descrição.sobre.as.variáveis)
+    listaVariaveis <- data.frame(listaVariaveisGeral$Descrição)
     listaVariaveis["N"] <- c(1:nrow(listaVariaveis)) 
     colnames(listaVariaveis) <- c("Descrição","Nº")
     listaVariaveis <- data.frame(listaVariaveis[,c("Nº", "Descrição")])
@@ -481,7 +485,7 @@ shinyServer(function(input, output) {
       base <- NULL
     }
     indicador <- input$indicadoresGeral_rows_selected
-    titulo <- as.character(listaVariaveisGeral[indicador,]$Descrição.sobre.as.variáveis)
+    titulo <- as.character(listaVariaveisGeral[indicador,]$Descrição)
     
     baseFil <- baseFiltrada()
     if(!is.null(indicador) && indicador != 0 && !is.null(input$aplicacao) && input$aplicacao == 1 && !is.null(base) && !is.null(base)) {
@@ -525,7 +529,7 @@ shinyServer(function(input, output) {
     mediaGeral <- as.double(colMeans(select(baseFiltrada(), one_of(as.character(listaVariaveisGeral$Variável)))))
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
     listaVariaveisGeral["N"] <- c(1:nrow(listaVariaveisGeral))
-    dataGeral <- data.frame(listaVariaveisGeral$N,aluno,mediaGeral,listaVariaveisGeral$Descrição.sobre.as.variáveis)
+    dataGeral <- data.frame(listaVariaveisGeral$N,aluno,mediaGeral,listaVariaveisGeral$Descrição)
     dataGeral["gap"] <- abs(dataGeral$aluno - dataGeral$mediaGeral)
     colnames(dataGeral) <- c("Var","Freq_Aluno","Media_Turma","Descricao","gap")
     dataGeral <- dataGeral[with(dataGeral, order(Var)), ]
@@ -607,7 +611,7 @@ shinyServer(function(input, output) {
 
     construtosCheckBox <- INcheckboxesDesempenho()
     
-    listaVariaveis <- data.frame(dicionarioBaseDesempenho[,c("Descrição.sobre.as.variáveis", "Construto")])
+    listaVariaveis <- data.frame(dicionarioBaseDesempenho[,c("Descrição", "Construto")])
     listaVariaveis["N"] <- c(1:nrow(listaVariaveis))
     colnames(listaVariaveis) <- c("Descrição", "Construto","Nº")
     listaVariaveis <- data.frame(listaVariaveis[,c("Nº","Descrição", "Construto")])    
@@ -795,7 +799,7 @@ shinyServer(function(input, output) {
     indicador <- input$indicadoresDesempenho_rows_selected
     base <- baseFiltrada()
     if(!is.null(indicador) && indicador != 0 && !is.null(base) && input$aplicacao == 2) {
-      titulo <- as.character(dicionarioBaseDesempenho[indicador,]$Descrição.sobre.as.variáveis)
+      titulo <- as.character(dicionarioBaseDesempenho[indicador,]$Descrição)
       subtitulo <- as.character(dicionarioBaseDesempenho[indicador,]$Construto)
       
       var <- as.character(dicionarioBaseDesempenho[indicador,]$Variável)
@@ -867,7 +871,7 @@ shinyServer(function(input, output) {
     mediaSat <- as.double(colMeans(select(filter(baseFiltrada(), DESEMPENHO_BINARIO == "0"),one_of(as.character(listaVariaveisDesempenho$Variável)))))
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
     listaVariaveisDesempenho["N"] <- c(1:nrow(listaVariaveisDesempenho))
-    dataDesempenho <- data.frame(listaVariaveisDesempenho$N,mediaSat,aluno,listaVariaveisDesempenho$Descrição.sobre.as.variáveis)
+    dataDesempenho <- data.frame(listaVariaveisDesempenho$N,mediaSat,aluno,listaVariaveisDesempenho$Descrição)
     dataDesempenho["gap"] <- abs(dataDesempenho$mediaSat - dataDesempenho$aluno)
     colnames(dataDesempenho) <- c("Var","Satisfatorio","Freq_Aluno","Descricao","gap")
     dataDesempenho <- dataDesempenho[indSelecionados,]
@@ -947,7 +951,7 @@ shinyServer(function(input, output) {
   
   #retorna tabela de indicadores evasao
   output$indicadoresEvasao <- renderDataTable({
-    listaVariaveis <- data.frame(dicionarioBaseEvasao[,c("INDICADOR","CONSTRUTOS")])
+    listaVariaveis <- data.frame(dicionarioBaseEvasao[,c("Descrição","Construto")])
     listaVariaveis["N"] <- c(1:nrow(listaVariaveis))
     colnames(listaVariaveis) <- c("Descrição","Construto","Nº")
     listaVariaveis <- data.frame(listaVariaveis[,c("Nº","Descrição","Construto")])
@@ -1012,7 +1016,7 @@ shinyServer(function(input, output) {
         class = "compact"
       )
     }else if(input$tabEvasao == "3"){
-      variaveis <- as.character(listaVariaveisEvasao$ID)
+      variaveis <- as.character(listaVariaveisEvasao$Variável)
       varSelected <- variaveis[input$indicadoresEvasao_rows_selected]
       if(length(varSelected) == 0){
         listaAlunosEvasao <- NULL
@@ -1034,7 +1038,7 @@ shinyServer(function(input, output) {
         
       )
     }else{
-      variaveis <- as.character(listaVariaveisEvasao$ID)
+      variaveis <- as.character(listaVariaveisEvasao$Variável)
       varSelected <- variaveis[input$indicadoresEvasao_rows_selected]
       base <- baseFiltrada()
       if(length(varSelected) == 0 || is.null(base) || input$aplicacao != 3){
@@ -1140,9 +1144,9 @@ shinyServer(function(input, output) {
     indicador <- input$indicadoresEvasao_rows_selected
     base <- baseFiltrada()
     if(!is.null(indicador) && indicador != 0 && !is.null(base) && input$aplicacao == 3) {
-      titulo <- as.character(dicionarioBaseEvasao[indicador,]$INDICADOR)
-      subtitulo <- as.character(dicionarioBaseEvasao[indicador,]$CONSTRUTOS)
-      var <- as.character(dicionarioBaseEvasao[indicador,]$ID)
+      titulo <- as.character(dicionarioBaseEvasao[indicador,]$Descrição)
+      subtitulo <- as.character(dicionarioBaseEvasao[indicador,]$Construto)
+      var <- as.character(dicionarioBaseEvasao[indicador,]$Variável)
       alunos <- select(base, one_of(as.character(c("Aluno", var, "PROBABILIDADE", "EVASAO"))))
       colnames(alunos) <- c("Nome", "Valor", "Probabilidade", "Evasao")
       
@@ -1247,16 +1251,15 @@ shinyServer(function(input, output) {
     
     alunos <- sort(as.character(baseFiltrada()$Aluno))
     alunoSelect <- alunos[input$alunosEvasao_rows_selected]
-    aluno <- as.double(select(filter(baseFiltrada(), Aluno == alunoSelect),one_of(as.character(listaVariaveisEvasao$ID))))
-    mediaBaixoRisco <- as.double(colMeans(select(filter(baseFiltrada(), EVASAO == "0"),one_of(as.character(listaVariaveisEvasao$ID)))))
+    aluno <- as.double(select(filter(baseFiltrada(), Aluno == alunoSelect),one_of(as.character(listaVariaveisEvasao$Variável))))
+    mediaBaixoRisco <- as.double(colMeans(select(filter(baseFiltrada(), EVASAO == "0"),one_of(as.character(listaVariaveisEvasao$Variável)))))
     #cria um data.frame com os indicadores, a freq do aluno e a media geral do indicador
     listaVariaveisEvasao["N"] <- c(1:nrow(listaVariaveisEvasao))
-    dataEvasao <- data.frame(listaVariaveisEvasao$N,mediaBaixoRisco,aluno,listaVariaveisEvasao$INDICADOR)
+    dataEvasao <- data.frame(listaVariaveisEvasao$N,mediaBaixoRisco,aluno,listaVariaveisEvasao$Descrição)
     colnames(dataEvasao) <- c("Var","Baixo_Risco","Freq_Aluno","Descricao")
     dataEvasao["gap"] <- abs(dataEvasao$Freq_Aluno - dataEvasao$Baixo_Risco)
     dataEvasao <- dataEvasao[indSelecionados,]
     dataEvasao <- dataEvasao[with(dataEvasao, order(Var)), ]
-    print(head(dataEvasao))
     p <- plot_ly(dataEvasao, color = I("gray80"),marker = list(size = 13)) %>%
       add_segments(x = ~Freq_Aluno, xend = ~Baixo_Risco, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), yend = ~paste("Ind:", str_pad(Var, 2, pad = "0")), showlegend = FALSE) %>%
       add_markers(x = ~Freq_Aluno, y = ~paste("Ind:", str_pad(Var, 2, pad = "0")), name = "Freq_Aluno", color = I("orange")) %>%
