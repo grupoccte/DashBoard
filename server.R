@@ -11,11 +11,11 @@ source("basesql.R");
 
 #Leitura de bases
 baseGeral <- getBaseGeral()
-baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding = "UTF-8")
+baseDesempenho <- getBaseDesempenho()
 baseEvasao <- getBaseEvasao()
 
 dicionarioBaseGeral <- getDicionarioGeral()
-dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_desempenho.csv", encoding = "UTF-8")
+dicionarioBaseDesempenho <- getDicionarioDesempenho()
 dicionarioBaseEvasao <- getDicionarioEvasao()
 
 fechaConexao()
