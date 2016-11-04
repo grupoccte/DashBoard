@@ -7,15 +7,18 @@ library(tidyr)
 require(devtools)
 require(rCharts)
 
-#Leitura de bases
-baseGeral <- read.csv2(file = "data/BaseGeral/base_geral.csv", encoding = "latin1")
-baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding = "UTF-8")
-baseEvasao <- read.csv2(file = "data/BaseEvasão/base_evasao.csv", encoding = "latin1")
+source("basesql.R");
 
-dicionarioBaseGeral <- read.csv2(file = "data/BaseGeral/dicionario_geral.csv", encoding = "UTF-8")
+#Leitura de bases
+baseGeral <- getBaseGeral()
+baseDesempenho <- read.csv2(file = "data/BaseDesempenho/base_desempenho.csv", encoding = "UTF-8")
+baseEvasao <- getBaseEvasao()
+
+dicionarioBaseGeral <- getDicionarioGeral()
 dicionarioBaseDesempenho <- read.csv2(file = "data/BaseDesempenho/dicionario_desempenho.csv", encoding = "UTF-8")
-dicionarioBaseEvasao <- read.csv2(file = "data/BaseEvasão/dicionario_evasao.csv", encoding = "UTF-8")
-dicionarioBaseEvasao$Variável <- tolower(dicionarioBaseEvasao$Variável)
+dicionarioBaseEvasao <- getDicionarioEvasao()
+
+fechaConexao()
 
 listaVariaveisGeral <- data.frame(dicionarioBaseGeral[,c("Variável","Descrição")])
 listaVariaveisDesempenho <- data.frame(dicionarioBaseDesempenho[,c("Variável","Descrição")])
