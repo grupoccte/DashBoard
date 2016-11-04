@@ -26,6 +26,7 @@ getBaseEvasao <- function() {
 getDicionarioEvasao <- function() {
   dicionarioEvasao <- dbGetQuery(con, "SELECT variavel, descricao, construto from dicionario_evasao")
   colnames(dicionarioEvasao) <- c("Variável", "Descrição", "Construto")
+  dicionarioEvasao$Variável <- tolower(dicionarioEvasao$Variável)
   return(dicionarioEvasao)
 }
 
