@@ -30,8 +30,8 @@ getDicionarioDesempenho <- function() {
 }
 
 getBaseEvasao <- function() {
-  baseEvasao <- dbGetQuery(con,"SELECT curso, periodo, disciplina, aluno, var01, var02, var03, var10, var11, var12, var13, var16, var17, var18, var19, var20, var21, var26, var27, var29 from evasao")
-  colnames(baseEvasao) <- c("Curso", "Periodo", "Disciplina", "Aluno", "var01", "var02", "var03", "var10", "var11", "var12", "var13", "var16", "var17", "var18", "var19", "var20", "var21", "var26", "var27", "var29")
+  baseEvasao <- dbGetQuery(con,"SELECT curso, periodo, disciplina, aluno, var01, var02, var03, var04, var10, var12, var13, var16, var17, var20, var21, var26, var27, var29 from evasao")
+  colnames(baseEvasao) <- c("Curso", "Periodo", "Disciplina", "Aluno", "var01", "var02", "var03", "var04", "var10", "var12", "var13", "var16", "var17", "var20", "var21", "var26", "var27", "var29")
   return(baseEvasao)
 }
 
